@@ -4,7 +4,7 @@ import json
 import os
 import signal
 import sys
-import CivVSelect as cvs
+import choose as c
 import utilities as utils
 
 def update_default_bot_status():
@@ -49,33 +49,25 @@ async def usage(message):
     if(debug):
         utils.log(2, '' + str(message.channel) + '\t' + str(message.mention_everyone))
 
-    # await client.delete_message(message)
     await message.delete()
     await message.channel.send(content=None, embed=help_message)
 
 async def choose(message):
     global client
 
-    tokens = message.content.split(' ')
-    token_count  = len(tokens)
+    argv = message.content.split(' ')
+    argc  = len(argv)
+    if(argc == 2): player_civs = c.pChoose(int(argv[1]))
+    elif(argc == 3): player_civs = c.pChoosec(int(argv[1]), int(argv[2]))
 
-    if(token_count == 2):
-        numPlayers = int(tokens[1])
-        return # TODO: Fix how this throws an error
-        # civs = cvs.choose(numPlayers, cvs.civ_len())
-    elif(token_count == 3):
-        numPlayers = int(tokens[1])
-        numCivs = int(tokens[2])
-        civs = cvs.choose(numPlayers, numCivs)
-
-    utils.log(0, 'Civs: ' + str(civs))
-
-    response = discord.Embed(title='Civ Randomizer Results', url=website, description='Results of the randomizer.', color=0x58ff00)
+    response = discord.Embed(title='Civilization Randomizer Results', url=website, description='Results of the randomizer.', color=0x58ff00)
     response.set_author(name='Civ Randomizer', url=website, icon_url=logo_url)
     response.set_thumbnail(url=logo_url)
 
-    for player in range(0,len(civs)):
-        response.add_field(name=str('Player ' + str(player + 1) + ':'), value=str('Choose from: ' + str(civs[player])), inline=False)
+    utils.log(0, 'Player Civilization selections:')
+    for player in range(0,len(player_civs)):
+        utils.log(0, '\tPlayer ' + str(player) + ': ' + str(player_civs[player]))
+        response.add_field(name=str('Player ' + str(player + 1) + ':'), value=str('Choose from: ' + str(player_civs[player])), inline=False)
 
     await message.delete()
     await message.channel.send(content=None, embed=response)
@@ -84,7 +76,7 @@ async def bad_command(message):
     global client
 
     utils.log(1, 'Cannot process this command: ' + message.content + '\n\tIgnoring!')
-    await client.delete_message(message)
+    await message.delete()
     await message.channel.send(content=('**<@' + str(message.author.id) + '> Bad command: \"' + message_prefix(message.content) + message_suffix(message.content) + '\"!** *(Try using ' + message_prefix(message.content) + "help for correct usage)*"))
 
 #
@@ -97,14 +89,15 @@ bot_token = os.getenv('CIV_BOT_TOKEN')
 # Stuff to use in runtime
 #
 debug = True
-prefix = 'cr!'
+prefix = 'c!'
 commands = {
-    'rand': 'Gets random set of civs'
+    'help': 'Stop it, get some help.',
+    'choose <[Int] players> <[Int] civilizations>': 'Gets a random set of civilizations from n number of players. Players field is mandatory, civilizations field is optional.'
 }
 bot_status = ''
 active_bot_status = 'Twiddling thumbs...'
 website = 'https://github.com/mackkcooper/CivVSelect'
-logo_url = 'https://avatars0.githubusercontent.com/u/28746912'
+logo_url = 'https://i.imgur.com/pBgN2gZ.jpg'
 update_default_bot_status()
 
 #
@@ -134,7 +127,7 @@ async def on_message(message):
             await choose(message)
         else:
             await set_status('Invalid command!', discord.Status.dnd)
-            await usage(message)
+            await bad_command(message)
 
         bot_status = active_bot_status
         await set_status(bot_status, discord.Status.idle)
@@ -143,7 +136,7 @@ client.run(bot_token)
 signal.signal(signal.SIGINT, handle_forced_exit())
 
 # def main():
-#     cvs.choose(sys.argv)
+#     c.choose(sys.argv)
 #
 # if __name__ == '__main__':
 #     main()
