@@ -1,39 +1,40 @@
 import random, sys
+import utilities as utils
 
-argc = len(sys.argv)
+CIV_LIST = ["America","Arabia","Assyria","Austria","Aztecs","Babylon","Brazil","Byzantium","Carthage","Celts","China","Denmark","Netherlands","Egypt","England","Ethiopia","France","Germany","Greece","Huns","Incans","India","Indonesia","Iroquois","Japan","Maya","Mongolia","Morocco","Ottomans","Persia","Poland","Polynesia","Portugal","Rome","Russia","Shoshone","Siam","Songhai","Spain","Sweden","Venice","Zulus"]
 
-numPlayers = 1
-numCivs = 3
+def civ_len():
+    return len(CIV_LIST)
 
-if (argc > 1):
-    numPlayers = int(sys.argv[1])
-if (argc > 2):
-    numCivs = int(sys.argv[2])
+def choose(numPlayers, numCivs):
+    players = {}
 
-civList = ["America","Arabia","Assyria","Austria","Aztecs","Babylon","Brazil","Byzantium","Carthage","Celts","China","Denmark","Netherlands","Egypt","England","Ethiopia","France","Germany","Greece","Huns","Incans","India","Indonesia","Iroquois","Japan","Maya","Mongolia","Morocco","Ottomans","Persia","Poland","Polynesia","Portugal","Rome","Russia","Shoshone","Siam","Songhai","Spain","Sweden","Venice","Zulus"]
+    if(civ_len() < (numPlayers * numCivs)+1):
+        utils.log(3, 'User tried to choose ' + str(numCivs) + ' from a pool of ' + str(civ_len()) + ' civs!' )
+        return players
 
-if(len(civList) < (numPlayers * numCivs)+1):
-    sys.exit("\nError: Too many players/civs; try decreasing the number of civs per player.\n")
+    def getCiv():
+        i = random.randint(0, civ_len() - 1)
+        civ = CIV_LIST.pop(i)
+        if (civ == "Venice"):
+            return None
+        return civ
 
-print()
-def getCiv():
-    i = random.randint(0,len(civList)-1)
-    civ = civList.pop(i)
-    print(civ, end='')
-    if (civ == "Venice"):
-        return True
-    return False
+    for p in range(numPlayers):
+        extra = False
+        civs = []
+        for i in range(numCivs):
+            new_civ = getCiv()
+            if(new_civ == None):
+                extra = True
+            civs.append(new_civ)
+        if extra:
+            getCiv()
+        players[p] = civs
+    return players
 
-for p in range(numPlayers):
-    extra = False
-    print("Player " + str(p+1) + " choose from: ", end='')
-    for i in range(numCivs):
-        if (getCiv()): 
-            extra = True
-        if (i < (numCivs - 1)):
-            print(", ", end='')
-    if extra:
-        print(", ", end='')
-        getCiv()
-    print(";")
-print()
+def main():
+    utils.log(0, str(choose(int(sys.argv[1]), 10)))
+
+if __name__ == '__main__':
+    main()
