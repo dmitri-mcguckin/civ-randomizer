@@ -1,6 +1,7 @@
-import random, sys
+import random, sys, math
 import utilities as utils
 
+DEFAULT_CIV_POOL = ["America","Arabia","Assyria","Austria","Aztecs","Babylon","Brazil","Byzantium","Carthage","Celts","China","Denmark","Netherlands","Egypt","England","Ethiopia","France","Germany","Greece","Huns","Incans","India","Indonesia","Iroquois","Japan","Maya","Mongolia","Morocco","Ottomans","Persia","Poland","Polynesia","Portugal","Rome","Russia","Shoshone","Siam","Songhai","Spain","Sweden","Venice","Zulus"]
 CIV_POOL = ["America","Arabia","Assyria","Austria","Aztecs","Babylon","Brazil","Byzantium","Carthage","Celts","China","Denmark","Netherlands","Egypt","England","Ethiopia","France","Germany","Greece","Huns","Incans","India","Indonesia","Iroquois","Japan","Maya","Mongolia","Morocco","Ottomans","Persia","Poland","Polynesia","Portugal","Rome","Russia","Shoshone","Siam","Songhai","Spain","Sweden","Venice","Zulus"]
 CIV_BLACKLIST = [ 'Venice' ]
 
@@ -20,12 +21,16 @@ class InvalidUsage(Exception):
     def __init__(self):
         utils.log(3, 'Invalid usage!\n\tUsage: python3 choose.py <[Int] player pool size> <[Int] civilization pool size>')
 
+def reset_pool():
+    CIV_POOL = DEFAULT_CIV_POOL
+
 def pool_size():
     return len(CIV_POOL)
 
+def recommended_pool_size(players):
+    return math.floor(pool_size() / int(players)) - 1
+
 def draw_random_civ(remove_on_progress):
-    if(pool_size() <= 0):
-        raise GreedyPlayer()
     index = random.randint(0, pool_size() - 1)
     if(remove_on_progress): random_civ = CIV_POOL.pop(index)
     else: random_civ = CIV_POOL[index]
@@ -37,16 +42,15 @@ def draw_random_civ(remove_on_progress):
 def pChoose(players):
     return pChoosec(players, pool_size())
 
-def pChoosec(players, civilizations):
+def pChoosec(players, civilizations, remove_on_progress=True):
     player_civs = {}
-    remove_on_progress = False
 
     if(players <= 0 or civilizations <= 0):
         raise NonPositiverange()
     elif(civilizations > pool_size()):
         raise OverflowRange()
-    elif((civilizations % players) == pool_size()):
-        remove_on_progress = False
+    elif(((players * civilizations) + 1) > pool_size()):
+        raise GreedyPlayer()
 
     for i in range(0, players):
         random_civs = []
@@ -60,12 +64,21 @@ def main():
         argc = len(sys.argv) - 1
         utils.log(2, 'ARGS: ' + str(sys.argv) + '\tARG COUNT: ' + str(argc))
 
-        if(argc == 1):
-            utils.log(0, str(pChoose(int(sys.argv[1]))))
-        elif(argc == 2):
-            utils.log(0, str(pChoosec(int(sys.argv[1]), int(sys.argv[2]))))
-        else:
-            raise InvalidUsage()
+        try:
+            if(argc == 1):
+                results = pChoose(int(sys.argv[1]))
+            elif(argc == 2):
+                results = pChoosec(int(sys.argv[1]), int(sys.argv[2]))
+            else:
+                raise InvalidUsage()
+        except GreedyPlayer:
+            utils.log(3, 'User attempted to choose from a pool of civs too big to share with all players.'
+                + '\n\tRecommended size is: ' + str(recommended_pool_size(sys.argv[1])))
+            exit(1)
+
+        for i in results.keys():
+            utils.log(0, 'Player ' + str(i + 1) + ': ' + str(results[i]))
+
     except InvalidUsage as e:
         utils.log(1, 'Throwing out input...')
 
