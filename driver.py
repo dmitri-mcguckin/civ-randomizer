@@ -1,6 +1,4 @@
 import discord
-import asyncio
-import json
 import os
 import signal
 import sys
@@ -134,9 +132,3 @@ async def on_message(message):
 
 client.run(bot_token)
 signal.signal(signal.SIGINT, handle_forced_exit())
-
-# def main():
-#     c.choose(sys.argv)
-#
-# if __name__ == '__main__':
-#     main()

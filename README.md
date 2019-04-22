@@ -1,2 +1,3 @@
-# CivVSelect
-Little Python 3 program I use to figure out what Civs my friends and I get to play when we meet up online.
+# Civilization Randomizer
+
+A python bot for randomly selecting a subset of all civs in `Sid Meyer's Civilization V`, *(including all DLC's)*, to choose from.
