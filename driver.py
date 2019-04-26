@@ -105,7 +105,7 @@ async def choose(message):
             if(result):
                 c.reset_pool()
                 utils.log(2, 'Players: ' + argv[1] + '\tCivilizations: ' + str(c.recommended_pool_size(argv[1])))
-                player_civs = c.pChoosec(int(argv[1]), c.recommended_pool_size(argv[1]))
+                player_civs = c.pChoose(int(argv[1]))
             else:
                 await message.channel.send(content='**Canceling dice roll!**')
                 message.delete()

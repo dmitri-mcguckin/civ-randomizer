@@ -1,10 +1,6 @@
 import random, sys, math
 import utilities as utils
 
-DEFAULT_CIV_POOL = ["America","Arabia","Assyria","Austria","Aztecs","Babylon","Brazil","Byzantium","Carthage","Celts","China","Denmark","Netherlands","Egypt","England","Ethiopia","France","Germany","Greece","Huns","Incans","India","Indonesia","Iroquois","Japan","Maya","Mongolia","Morocco","Ottomans","Persia","Poland","Polynesia","Portugal","Rome","Russia","Shoshone","Siam","Songhai","Spain","Sweden","Venice","Zulus"]
-CIV_POOL = ["America","Arabia","Assyria","Austria","Aztecs","Babylon","Brazil","Byzantium","Carthage","Celts","China","Denmark","Netherlands","Egypt","England","Ethiopia","France","Germany","Greece","Huns","Incans","India","Indonesia","Iroquois","Japan","Maya","Mongolia","Morocco","Ottomans","Persia","Poland","Polynesia","Portugal","Rome","Russia","Shoshone","Siam","Songhai","Spain","Sweden","Venice","Zulus"]
-CIV_BLACKLIST = [ 'Venice' ]
-
 class GreedyPlayer(Exception):
     def __init__(self):
         utils.log(3, 'User did not allow enough civs to share!')
@@ -40,7 +36,7 @@ def draw_random_civ(remove_on_progress):
     return random_civ
 
 def pChoose(players):
-    return pChoosec(players, pool_size())
+    return pChoosec(players, recommended_pool_size(players))
 
 def pChoosec(players, civilizations, remove_on_progress=True):
     player_civs = {}
