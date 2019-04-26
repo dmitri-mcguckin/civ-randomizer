@@ -1,5 +1,7 @@
-import random, sys, math
+import random, sys, math, json
 import utilities as utils
+
+CONFIG='./config.json'
 
 class GreedyPlayer(Exception):
     def __init__(self):
@@ -16,6 +18,10 @@ class OverflowRange(Exception):
 class InvalidUsage(Exception):
     def __init__(self):
         utils.log(3, 'Invalid usage!\n\tUsage: python3 choose.py <[Int] player pool size> <[Int] civilization pool size>')
+
+class CivRandomizer():
+    def __init__(self):
+        self.civilizations = JSON.
 
 def reset_pool():
     CIV_POOL = DEFAULT_CIV_POOL
