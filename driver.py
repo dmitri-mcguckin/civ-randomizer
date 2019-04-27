@@ -11,9 +11,9 @@ confirm_emoji = "\u2705"
 deny_emoji = "\u26d4"
 commands = {
     'help': 'Stop it, get some help.',
-    'blacklist [add/del/get] <[String] civilization name>': 'Gets, adds to, or removes from the civilization blacklist.',
-    'choose <[Int] player count> <[Int] civilization count>': 'Gets a random set of civilizations from n number of players. Players field is mandatory, civilizations field is optional.',
-    'dlcs [enable/all/disable/none/get]': 'Enables, enables all, disableds, disables all, or gets a list of all dlcs available for Civilization V.'
+    'blacklist [add/del/get] <[String] civilization name>': 'Adds to, deletes from, or gets the civilization blacklist.',
+    'choose <[Int] player count> <(optional)[Int] civilization count>': 'Gets a random set of civilizations from n number of players. Players field is mandatory, civilizations field is optional.',
+    'dlcs [enable/all/disable/none/get]': 'Enables, enables all, disables, disables all, or gets a list of all dlcs available for Civilization V.'
 }
 DEFAULT_BOT_STATUS = 'Twiddling thumbs...'
 website = 'https://github.com/dmitri-mcguckin/civ-randomizer'
