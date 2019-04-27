@@ -1,86 +1,130 @@
-import random, sys, math
+import random, sys, math, json
 import utilities as utils
+from copy import copy, deepcopy
 
-DEFAULT_CIV_POOL = ["America","Arabia","Assyria","Austria","Aztecs","Babylon","Brazil","Byzantium","Carthage","Celts","China","Denmark","Netherlands","Egypt","England","Ethiopia","France","Germany","Greece","Huns","Incans","India","Indonesia","Iroquois","Japan","Maya","Mongolia","Morocco","Ottomans","Persia","Poland","Polynesia","Portugal","Rome","Russia","Shoshone","Siam","Songhai","Spain","Sweden","Venice","Zulus"]
-CIV_POOL = ["America","Arabia","Assyria","Austria","Aztecs","Babylon","Brazil","Byzantium","Carthage","Celts","China","Denmark","Netherlands","Egypt","England","Ethiopia","France","Germany","Greece","Huns","Incans","India","Indonesia","Iroquois","Japan","Maya","Mongolia","Morocco","Ottomans","Persia","Poland","Polynesia","Portugal","Rome","Russia","Shoshone","Siam","Songhai","Spain","Sweden","Venice","Zulus"]
-CIV_BLACKLIST = [ 'Venice' ]
-
-class GreedyPlayer(Exception):
+class CivRandomizer():
     def __init__(self):
-        utils.log(3, 'User did not allow enough civs to share!')
+        self.config_path='./config.json'
+        config_file = open(self.config_path, mode='r')
+        data = config_file.read()
+        config_file.close()
+        self.config = json.loads(data)
 
-class NonPositiverange(Exception):
-    def __init__(self):
-        utils.log(3, 'User tried to enter a non-positive range!')
+        self.reform_pool()
 
-class OverflowRange(Exception):
-    def __init__(self):
-        utils.log(3, 'User tried to enter a pool size bigger than the number of available civilizations!')
+    def __del__(self):
+        if(utils.DEBUG): utils.log(2, 'Destructing pool and writing config back to file!')
+        data = json.dumps(self.config, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=2, separators=None, default=None, sort_keys=True)
+        config_file = open(self.config_path, mode='w')
+        config_file.write(data)
+        config_file.close()
 
-class InvalidUsage(Exception):
-    def __init__(self):
-        utils.log(3, 'Invalid usage!\n\tUsage: python3 choose.py <[Int] player pool size> <[Int] civilization pool size>')
+    def reform_pool(self):
+        self.choose_pool = deepcopy(self.config['default_civilization_pool'])
 
-def reset_pool():
-    CIV_POOL = DEFAULT_CIV_POOL
+        for k,v in self.config['dlc_packs'].items():
+            if(v[0]):
+                self.choose_pool.append(v[1])
+            else:
+                utils.log(1, 'The ' + str(k) + ' dlc has been disabled!')
 
-def pool_size():
-    return len(CIV_POOL)
+        for i in self.config['blacklist']:
+            utils.log(1, 'The civilization: ' + str(i) + ' has been blacklisted and will not be considered in the pool choosing!')
+            if i in self.choose_pool:
+                self.choose_pool.remove(i)
+        self.choose_pool = utils.flatten_list(self.choose_pool)
+        self.pool_size = len(self.choose_pool)
 
-def recommended_pool_size(players):
-    return math.floor(pool_size() / int(players)) - 1
+    def update_pool_size(self):
+        self.pool_size = len(self.choose_pool)
+        return self.pool_size
 
-def draw_random_civ(remove_on_progress):
-    index = random.randint(0, pool_size() - 1)
-    if(remove_on_progress): random_civ = CIV_POOL.pop(index)
-    else: random_civ = CIV_POOL[index]
+    def get_blacklist(self):
+        return self.config['blacklist']
 
-    if(random_civ in CIV_BLACKLIST):
-        random_civ = draw_random_civ(remove_on_progress)
-    return random_civ
+    def add_to_blacklist(self, civilization):
+        civilization = civilization[0].upper() + civilization[1:len(civilization)].lower()
 
-def pChoose(players):
-    return pChoosec(players, pool_size())
+        if(civilization not in self.config['blacklist']):
+            self.config['blacklist'].append(civilization)
+            self.reform_pool()
 
-def pChoosec(players, civilizations, remove_on_progress=True):
-    player_civs = {}
+        if(utils.DEBUG): utils.log(0, 'Added ' + civilization + ' to the blacklist!')
 
-    if(players <= 0 or civilizations <= 0):
-        raise NonPositiverange()
-    elif(civilizations > pool_size()):
-        raise OverflowRange()
-    elif(((players * civilizations) + 1) > pool_size()):
-        raise GreedyPlayer()
+    def remove_from_blacklist(self, civilization):
+        civilization = civilization[0].upper() + civilization[1:len(civilization)].lower()
 
-    for i in range(0, players):
-        random_civs = []
-        for j in range(0, (civilizations)):
-            random_civs.append(draw_random_civ(remove_on_progress))
-        player_civs[i] = random_civs
-    return player_civs
+        if(civilization in self.config['blacklist']):
+            self.config['blacklist'].remove(civilization)
+            self.reform_pool()
+
+        if(utils.DEBUG): utils.log(0, 'Removed ' + civilization + ' from the blacklist!')
+
+    def get_dlcs(self):
+        results = {}
+
+        for k,v in self.config['dlc_packs'].items():
+            results[k] = { 'enabled': v[0] }
+        return results
+
+    def toggle_all_dlcs(self, mode):
+        for k,v in self.config['dlc_packs'].items():
+            v[0] = mode
+
+    def toggle_dlc(self, dlc, mode):
+        dlc = dlc.lower()
+
+        for k,v in self.config['dlc_packs'].items():
+            if(dlc in k.lower()):
+                utils.log(1, 'Matched: "' + k + '" from "' + dlc + '"!')
+                v[0] = mode
+                return True
+        return False
+
+    def recommended_pool_size(self, player_count, civilization_count):
+        return math.floor(civilization_count / player_count)
+
+    def choose(self, player_count, civilization_count=None):
+        if(civilization_count == None):
+            civilization_count = self.recommended_pool_size(player_count, self.pool_size)
+            if(utils.DEBUG): utils.log(2, 'Using recommended shared pool size: ' + str(civilization_count))
+
+        results = {}
+
+        for i in range(0, player_count):
+            player_hash = str('Player ' + str(i + 1))
+            results[player_hash] = []
+            for j in range(0, civilization_count):
+                position = random.randint(0, self.update_pool_size() - 1)
+                results[player_hash].append(self.choose_pool.pop(position))
+
+        return results
+
+def usage():
+    utils.log(3, 'Invalid usage!\n\tUsage: python3 choose.py <[Int] player count> <[Int] civilization count>')
 
 def main():
-    try:
-        argc = len(sys.argv) - 1
-        utils.log(2, 'ARGS: ' + str(sys.argv) + '\tARG COUNT: ' + str(argc))
+    argc = len(sys.argv) - 1
+    if(utils.DEBUG): utils.log(2, 'ARGS: ' + str(sys.argv) + '\tARG COUNT: ' + str(argc))
 
-        try:
-            if(argc == 1):
-                results = pChoose(int(sys.argv[1]))
-            elif(argc == 2):
-                results = pChoosec(int(sys.argv[1]), int(sys.argv[2]))
-            else:
-                raise InvalidUsage()
-        except GreedyPlayer:
-            utils.log(3, 'User attempted to choose from a pool of civs too big to share with all players.'
-                + '\n\tRecommended size is: ' + str(recommended_pool_size(sys.argv[1])))
-            exit(1)
+    if(argc == 1 or argc == 2):
+        randomizer = CivRandomizer()
+        if(utils.DEBUG):
+            utils.log(2, '\n\tDLCS:\t' + str(randomizer.get_dlcs())
+                       + '\n\tBlacklist:\t' + str(randomizer.get_blacklist())
+                       + '\n\tChoose Pool:\t' + str(randomizer.choose_pool))
+        randomizer.toggle_all_dlcs(False)
+        randomizer.toggle_dlc('vikings', True)
+        randomizer.add_to_blacklist('venice')
+        randomizer.remove_from_blacklist('egypt')
 
-        for i in results.keys():
-            utils.log(0, 'Player ' + str(i + 1) + ': ' + str(results[i]))
-
-    except InvalidUsage as e:
-        utils.log(1, 'Throwing out input...')
+        if(argc == 1):
+            utils.log(0, sys.argv[1] + ' choose r: ' + str(randomizer.choose(int(sys.argv[1]))))
+        else:
+            utils.log(0, sys.argv[1] + ' choose ' + sys.argv[2] + ': ' + str(randomizer.choose(int(sys.argv[1]), civilization_count=int(sys.argv[2]))))
+    else:
+        usage()
+        exit(1)
 
 if __name__ == '__main__':
     main()
