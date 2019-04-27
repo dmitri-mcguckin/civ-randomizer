@@ -1,8 +1,4 @@
-import discord
-import os
-import asyncio
-import signal
-import sys
+import discord, os, asyncio, signal, sys
 import choose as c
 import utilities as utils
 
@@ -15,7 +11,9 @@ confirm_emoji = "\u2705"
 deny_emoji = "\u26d4"
 commands = {
     'help': 'Stop it, get some help.',
-    'choose <[Int] players> <[Int] civilizations>': 'Gets a random set of civilizations from n number of players. Players field is mandatory, civilizations field is optional.'
+    'blacklist [add/del/get] <[String] civilization name>': 'Gets, adds to, or removes from the civilization blacklist.',
+    'choose <[Int] player count> <[Int] civilization count>': 'Gets a random set of civilizations from n number of players. Players field is mandatory, civilizations field is optional.',
+    'dlcs [enable/all/disable/none/get]': 'Enables, enables all, disableds, disables all, or gets a list of all dlcs available for Civilization V.'
 }
 DEFAULT_BOT_STATUS = 'Twiddling thumbs...'
 website = 'https://github.com/dmitri-mcguckin/civ-randomizer'
@@ -141,12 +139,70 @@ async def choose(message):
     if(utils.DELETE_AFTER_PROCESS): await message.delete()
     await message.channel.send(content=None, embed=response)
 
+async def blacklist(message):
+    global client
+    global randomizer
+    global confirm_emoji
+
+    substrings = message.content.split(' ')
+    if(len(substrings) == 3 and substrings[1].lower() == 'add'):
+        randomizer.add_to_blacklist(substrings[2])
+        await message.add_reaction(confirm_emoji)
+    elif(len(substrings) == 3 and substrings[1].lower() == 'del'):
+        randomizer.remove_from_blacklist(substrings[2])
+        await message.add_reaction(confirm_emoji)
+    elif((len(substrings) == 1) or (len(substrings) == 2 and substrings[1].lower() == 'get')):
+        list = randomizer.get_blacklist()
+        response = discord.Embed(title='Civilization Randomizer Blacklist', url=website, description='List of civs that will be explicitly removed from the pool.', color=0x58ff00)
+        response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
+        response.set_thumbnail(url=logo_url)
+        for civ in list:
+            response.add_field(name=civ, value='true', inline=True)
+        await message.add_reaction(confirm_emoji)
+        await message.channel.send(content=None, embed=response)
+    else:
+        await bad_command(message)
+
+    if(utils.DELETE_AFTER_PROCESS): await message.delete()
+
+async def dlcs(message):
+    global client
+    global randomizer
+    global confirm_emoji
+
+    substrings = message.content.split(' ')
+    if(len(substrings) == 3 and substrings[1].lower() == 'enable'):
+        randomizer.toggle_dlc(substrings[2], True)
+        await message.add_reaction(confirm_emoji)
+    elif(len(substrings) == 2 and substrings[1].lower() == 'all'):
+        randomizer.toggle_all_dlcs(True)
+        await message.add_reaction(confirm_emoji)
+    elif(len(substrings) == 3 and substrings[1].lower() == 'disable'):
+        randomizer.toggle_dlc(substrings[2], False)
+        await message.add_reaction(confirm_emoji)
+    elif(len(substrings) == 2 and substrings[1].lower() == 'none'):
+        randomizer.toggle_all_dlcs(False)
+        await message.add_reaction(confirm_emoji)
+    elif((len(substrings) == 1) or (len(substrings) == 2 and substrings[1].lower() == 'get')):
+        list = randomizer.get_dlcs()
+        response = discord.Embed(title='Civilization Randomizer DLCs List', url=website, description='List of all DLCs available for Civilization V.', color=0x58ff00)
+        response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
+        response.set_thumbnail(url=logo_url)
+        for dlc_name,hash in list.items():
+            response.add_field(name=dlc_name, value=str('Enabled: ' + str(hash['enabled'])), inline=False)
+        await message.add_reaction(confirm_emoji)
+        await message.channel.send(content=None, embed=response)
+    else:
+        await bad_command(message)
+
+    if(utils.DELETE_AFTER_PROCESS): await message.delete()
+
 async def bad_command(message):
     global client
 
     utils.log(1, 'Cannot process this command: ' + message.content + '\n\tIgnoring!')
     if(utils.DELETE_AFTER_PROCESS): await message.delete()
-    await message.channel.send(content=('**<@' + str(message.author.id) + '> Bad command: \"' + message_prefix(message.content) + message_suffix(message.content) + '\"!** *(Try using ' + message_prefix(message.content) + "help for correct usage)*"))
+    await message.channel.send(content=('**<@' + str(message.author.id) + '> Bad command: \"' + message.content + '\"!** *(Try using ' + message_prefix(message.content) + "help for correct usage)*"))
 
 #
 # Initialization
@@ -173,12 +229,18 @@ async def on_message(message):
         # Get the action map of the command suffix
         command = message_suffix(message.content)
 
-        if(command == "help"):
-            await set_status(bot_status('Getting help...'), discord.Status.dnd)
-            await usage(message)
+        if(command == 'blacklist'):
+            await set_status(bot_status('Makin a list...'), discord.Status.dnd)
+            await blacklist(message)
         elif(command == 'choose'):
             await set_status(bot_status('Rolling dice...'), discord.Status.dnd)
             await choose(message)
+        elif(command == 'dlcs'):
+            await set_status(bot_status('Checking it twice...'), discord.Status.dnd)
+            await dlcs(message)
+        elif(command == "help"):
+            await set_status(bot_status('Getting help...'), discord.Status.dnd)
+            await usage(message)
         else:
             await set_status(bot_status('Invalid command!'), discord.Status.dnd)
             await bad_command(message)
