@@ -1,4 +1,7 @@
 {
+  "blacklist": [
+    "Venice"
+  ],
   "default_civilization_pool": [
     "America",
     "Arabia",
@@ -38,14 +41,29 @@
     "Venice",
     "Zulus"
   ],
-  "blacklist": [
-    "Venice"
-  ],
   "dlc_packs": {
-    "Babylon (Nebuchadnezzar II)": [false, "Babylon"],
-    "Double Civilization and Scenario Pack: Spain and Inca": [false, ["Spain", "Incans"]],
-    "Civilization and Scenario Pack: Polynesia": [false, "Polynesia"],
-    "Civilization and Scenario Pack: Denmark - The Vikings": [false, "Denmark"],
-    "Civilization and Scenario Pack: Korea": [false, "Korea"]
+    "Babylon (Nebuchadnezzar II)": [
+      false,
+      "Babylon"
+    ],
+    "Civilization and Scenario Pack: Denmark - The Vikings": [
+      true,
+      "Denmark"
+    ],
+    "Civilization and Scenario Pack: Korea": [
+      false,
+      "Korea"
+    ],
+    "Civilization and Scenario Pack: Polynesia": [
+      false,
+      "Polynesia"
+    ],
+    "Double Civilization and Scenario Pack: Spain and Inca": [
+      false,
+      [
+        "Spain",
+        "Incans"
+      ]
+    ]
   }
 }
