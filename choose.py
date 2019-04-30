@@ -60,6 +60,9 @@ class CivRandomizer():
 
         if(utils.DEBUG): utils.log(0, 'Removed ' + civilization + ' from the blacklist!')
 
+    def empty_blacklist(self):
+        self.config['blacklist'] = []
+
     def get_dlcs(self):
         results = {}
 

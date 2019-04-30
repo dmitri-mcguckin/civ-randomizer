@@ -11,7 +11,7 @@ confirm_emoji = "\u2705"
 deny_emoji = "\u26d4"
 commands = {
     'help': 'Stop it, get some help.',
-    'blacklist [add/del/get] <[String] civilization name>': 'Adds to, deletes from, or gets the civilization blacklist.',
+    'blacklist [add/del/empty] <[String] civilization name>': 'Gets the blacklist, Adds to it, deletes from it, or empties it.',
     'choose <[Int] player count> <(optional)[Int] civilization count>': 'Gets a random set of civilizations from n number of players. Players field is mandatory, civilizations field is optional.',
     'dlcs [enable/all/disable/none/get]': 'Enables, enables all, disables, disables all, or gets a list of all dlcs available for Civilization V.'
 }
@@ -46,20 +46,6 @@ def message_argument(message):
 
 def is_command(message):
     return (message_prefix(message) == prefix)
-
-class Timer:
-    def __init__(self, timeout, callback):
-        self._timeout = timeout
-        self._callback = callback
-        self._task = asyncio.ensure_future(self._job())
-
-    async def _job(self):
-        await asyncio.sleep(self._timeout)
-        utils.log(1, 'TIMEOUT EVENT!')
-        await self._callback()
-
-    def cancel(self):
-        self._task.cancel()
 
 async def set_status(status_message, new_status):
     global client
@@ -145,13 +131,21 @@ async def blacklist(message):
     global confirm_emoji
 
     substrings = message.content.split(' ')
-    if(len(substrings) == 3 and substrings[1].lower() == 'add'):
-        randomizer.add_to_blacklist(substrings[2])
+    if(len(substrings) >= 3 and substrings[1].lower() == 'add'):
+        for i in range(2, len(substrings) - 2):
+            randomizer.add_to_blacklist(substrings[i])
         await message.add_reaction(confirm_emoji)
-    elif(len(substrings) == 3 and substrings[1].lower() == 'del'):
-        randomizer.remove_from_blacklist(substrings[2])
+        randomizer.reform_pool()
+    elif(len(substrings) >= 3 and substrings[1].lower() == 'del'):
+        for i in range(2, len(substrings) - 2):
+            randomizer.remove_from_blacklist(substrings[i])
         await message.add_reaction(confirm_emoji)
-    elif((len(substrings) == 1) or (len(substrings) == 2 and substrings[1].lower() == 'get')):
+        randomizer.reform_pool()
+    elif(len(substrings) == 2 and substrings[1].lower() == 'empty'):
+        randomizer.empty_blacklist()
+        await message.add_reaction(confirm_emoji)
+        randomizer.reform_pool()
+    elif(len(substrings) == 1):
         list = randomizer.get_blacklist()
         response = discord.Embed(title='Civilization Randomizer Blacklist', url=website, description='List of civs that will be explicitly removed from the pool.', color=0x58ff00)
         response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
