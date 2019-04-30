@@ -133,18 +133,20 @@ async def blacklist(message):
     substrings = message.content.split(' ')
     if(len(substrings) >= 3 and substrings[1].lower() == 'add'):
         for i in range(2, len(substrings) - 2):
+            if(utils.DEBUG): utils.log(0, 'Adding value: #' + str(i) + ' ' + substrings[i])
             randomizer.add_to_blacklist(substrings[i])
-        await message.add_reaction(confirm_emoji)
         randomizer.reform_pool()
+        await message.add_reaction(confirm_emoji)
     elif(len(substrings) >= 3 and substrings[1].lower() == 'del'):
         for i in range(2, len(substrings) - 2):
+            if(utils.DEBUG): utils.log(0, 'Adding value: #' + str(i) + ' ' + substrings[i])
             randomizer.remove_from_blacklist(substrings[i])
-        await message.add_reaction(confirm_emoji)
         randomizer.reform_pool()
+        await message.add_reaction(confirm_emoji)
     elif(len(substrings) == 2 and substrings[1].lower() == 'empty'):
         randomizer.empty_blacklist()
-        await message.add_reaction(confirm_emoji)
         randomizer.reform_pool()
+        await message.add_reaction(confirm_emoji)
     elif(len(substrings) == 1):
         list = randomizer.get_blacklist()
         response = discord.Embed(title='Civilization Randomizer Blacklist', url=website, description='List of civs that will be explicitly removed from the pool.', color=0x58ff00)
