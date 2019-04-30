@@ -139,7 +139,7 @@ async def blacklist(message):
         await message.add_reaction(confirm_emoji)
     elif(len(substrings) >= 3 and substrings[1].lower() == 'del'):
         for i in range(2, len(substrings) - 2):
-            if(utils.DEBUG): utils.log(0, 'Adding value: #' + str(i) + ' ' + substrings[i])
+            if(utils.DEBUG): utils.log(0, 'Adding value: #' + str(i) + ' ' + substrings[i] + ' of ' + str(len(substrings) - 2) + ' entries.')
             randomizer.remove_from_blacklist(substrings[i])
         randomizer.reform_pool()
         await message.add_reaction(confirm_emoji)
