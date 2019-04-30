@@ -11,9 +11,10 @@ confirm_emoji = "\u2705"
 deny_emoji = "\u26d4"
 commands = {
     'help': 'Stop it, get some help.',
-    'blacklist [add/del/empty] <[String] civilization name>': 'Gets the blacklist, Adds to it, deletes from it, or empties it.',
-    'choose <[Int] player count> <(optional)[Int] civilization count>': 'Gets a random set of civilizations from n number of players. Players field is mandatory, civilizations field is optional.',
-    'dlcs [enable/all/disable/none/get]': 'Enables, enables all, disables, disables all, or gets a list of all dlcs available for Civilization V.'
+    'ban': 'Alias for blacklist',
+    'blacklist [add/del/empty] <[String] civilization name>': '`<Nothing>` gets the blacklist, `add`Adds to it, `del` deletes from it, `empty` empties it.',
+    'choose <[Int] player_count> <(optional)[Int] civilization_count>': '`<Nothing>` gets a list of civilizations that can be randomly selected, otherwise gets `player_count` number of random selections of size `civilization_count`.',
+    'dlcs [enable/all/disable/none/get] <[String] dlc_name>': '`<Nothing>` gets a list of all available dlcs, `enable` enables `dlc_name`, `all` enables all dlcs, `disable` disables `dlc_name`, `none` disables all dlcs'
 }
 DEFAULT_BOT_STATUS = 'Twiddling thumbs...'
 website = 'https://github.com/dmitri-mcguckin/civ-randomizer'
@@ -52,42 +53,11 @@ async def set_status(status_message, new_status):
     game = discord.Game(status_message)
     await client.change_presence(status=new_status, activity=game)
 
-async def resolve_confirmation(message, question):
-    global client
-    global response_timeout
-    global confirm_emoji
-    global deny_emoji
-
-    def reactor_is_author(reaction, user):
-        global confirm_emoji
-        global deny_emoji
-        if(utils.DEBUG): utils.log(2, 'Confirm: ' + str(str(reaction) == confirm_emoji) + '\t\tDeny: ' + str(str(reaction) == deny_emoji))
-        return (user == message.author and ((str(reaction.emoji) == confirm_emoji) or (str(reaction.emoji) == deny_emoji)))
-
-    response = await message.channel.send(content=question)
-    can_resolve = False;
-    await response.add_reaction(confirm_emoji)
-    await response.add_reaction(deny_emoji)
-
-    try:
-        reaction, user = await client.wait_for('reaction_add', timeout=response_timeout, check=reactor_is_author)
-
-        if(str(reaction) == confirm_emoji):
-            can_resolve = True
-        elif(str(reaction) == deny_emoji):
-            can_resolve = False
-        else:
-            raise ImposibleReactionResolve()
-    except asyncio.TimeoutError:
-        raise ImposibleReactionResolve()
-
-    await response.delete()
-    return can_resolve
-
 async def usage(message):
     global client
+    global confirm_emoji
 
-    help_message = discord.Embed(title='Civilization Randomizer Help', url=website, description='Command info and details.', color=0x58ff00)
+    help_message = discord.Embed(title='Civilization Randomizer Help', url=website, description='Command info and details.', color=0xef2715)
     help_message.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
     help_message.set_thumbnail(url=logo_url)
 
@@ -97,6 +67,7 @@ async def usage(message):
     if(utils.DEBUG):
         utils.log(2, '' + str(message.channel) + '\t' + str(message.mention_everyone))
 
+    await message.add_reaction(confirm_emoji)
     await message.channel.send(content=None, embed=help_message)
 
 async def choose(message):
@@ -111,7 +82,7 @@ async def choose(message):
         if(argc == 2): results = randomizer.choose(int(argv[1]))
         elif(argc == 3): results = randomizer.choose(int(argv[1]), civilization_count=int(argv[2]))
 
-        response = discord.Embed(title='Civilization Randomizer Results', url=website, description='Results of the randomizer.', color=0x58ff00)
+        response = discord.Embed(title='Civilization Randomizer Results', url=website, description='Results of the randomizer.', color=0xf4fc07)
         response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
         response.set_thumbnail(url=logo_url)
 
@@ -126,7 +97,7 @@ async def choose(message):
         await message.channel.send(content=None, embed=response)
     else:
         list = randomizer.get_blacklist()
-        response = discord.Embed(title='Civilization Randomizer Choose Pool', url=website, description='List of civs that be chosen from.', color=0x58ff00)
+        response = discord.Embed(title='Civilization Randomizer Choose Pool', url=website, description='List of civs that be chosen from.', color=0x07fc28)
         response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
         response.set_thumbnail(url=logo_url)
         for civ in randomizer.get_choose_pool():
@@ -140,6 +111,7 @@ async def blacklist(message):
     global client
     global randomizer
     global confirm_emoji
+    global deny_emoji
 
     substrings = message.content.split(' ')
     if(len(substrings) >= 3 and substrings[1].lower() == 'add'):
@@ -160,7 +132,7 @@ async def blacklist(message):
         await message.add_reaction(confirm_emoji)
     elif(len(substrings) == 1):
         list = randomizer.get_blacklist()
-        response = discord.Embed(title='Civilization Randomizer Blacklist', url=website, description='List of civs that will be explicitly removed from the pool.', color=0x58ff00)
+        response = discord.Embed(title='Civilization Randomizer Blacklist', url=website, description='List of civs that will be explicitly removed from the pool.', color=0x2407fc)
         response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
         response.set_thumbnail(url=logo_url)
         for civ in list:
@@ -168,6 +140,7 @@ async def blacklist(message):
         await message.add_reaction(confirm_emoji)
         await message.channel.send(content=None, embed=response)
     else:
+        await message.add_reaction(deny_emoji)
         await bad_command(message)
 
     if(utils.DELETE_AFTER_PROCESS): await message.delete()
@@ -176,6 +149,7 @@ async def dlcs(message):
     global client
     global randomizer
     global confirm_emoji
+    global deny_emoji
 
     substrings = message.content.split(' ')
     if(len(substrings) == 3 and substrings[1].lower() == 'enable'):
@@ -190,9 +164,9 @@ async def dlcs(message):
     elif(len(substrings) == 2 and substrings[1].lower() == 'none'):
         randomizer.toggle_all_dlcs(False)
         await message.add_reaction(confirm_emoji)
-    elif((len(substrings) == 1) or (len(substrings) == 2 and substrings[1].lower() == 'get')):
+    elif(len(substrings) == 1):
         list = randomizer.get_dlcs()
-        response = discord.Embed(title='Civilization Randomizer DLCs List', url=website, description='List of all DLCs available for Civilization V.', color=0x58ff00)
+        response = discord.Embed(title='Civilization Randomizer DLCs List', url=website, description='List of all DLCs available for Civilization V.', color=0xa207fc)
         response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
         response.set_thumbnail(url=logo_url)
         for dlc_name,hash in list.items():
@@ -200,6 +174,7 @@ async def dlcs(message):
         await message.add_reaction(confirm_emoji)
         await message.channel.send(content=None, embed=response)
     else:
+        await message.add_reaction(deny_emoji)
         await bad_command(message)
 
     if(utils.DELETE_AFTER_PROCESS): await message.delete()
@@ -236,7 +211,7 @@ async def on_message(message):
         # Get the action map of the command suffix
         command = message_suffix(message.content)
 
-        if(command == 'blacklist'):
+        if(command == 'blacklist' or command == 'ban'):
             await set_status(bot_status('Makin a list...'), discord.Status.dnd)
             await blacklist(message)
         elif(command == 'choose'):
@@ -250,6 +225,7 @@ async def on_message(message):
             await usage(message)
         else:
             await set_status(bot_status('Invalid command!'), discord.Status.dnd)
+            await message.add_reaction(deny_emoji)
             await bad_command(message)
 
         await set_status(bot_status(), discord.Status.online)
