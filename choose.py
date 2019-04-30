@@ -39,6 +39,9 @@ class CivRandomizer():
         self.pool_size = len(self.choose_pool)
         return self.pool_size
 
+    def get_choose_pool(self):
+        return self.choose_pool
+
     def get_blacklist(self):
         return self.config['blacklist']
 

@@ -107,23 +107,34 @@ async def choose(message):
     argc  = len(argv)
     results = {}
 
-    if(argc == 2): results = randomizer.choose(int(argv[1]))
-    elif(argc == 3): results = randomizer.choose(int(argv[1]), civilization_count=int(argv[2]))
+    if(argc > 1):
+        if(argc == 2): results = randomizer.choose(int(argv[1]))
+        elif(argc == 3): results = randomizer.choose(int(argv[1]), civilization_count=int(argv[2]))
 
-    response = discord.Embed(title='Civilization Randomizer Results', url=website, description='Results of the randomizer.', color=0x58ff00)
-    response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
-    response.set_thumbnail(url=logo_url)
+        response = discord.Embed(title='Civilization Randomizer Results', url=website, description='Results of the randomizer.', color=0x58ff00)
+        response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
+        response.set_thumbnail(url=logo_url)
 
-    utils.log(0, 'Player Civilization selections:')
-    for player,civilizations in results.items():
-        civilization_string = "Choose from: "
-        for i in civilizations:
-            if(i != civilizations[-1]): civilization_string += i + ', '
-            else: civilization_string += 'or ' + i
-        response.add_field(name=player, value=civilization_string, inline=False)
+        utils.log(0, 'Player Civilization selections:')
+        for player,civilizations in results.items():
+            civilization_string = "Choose from: "
+            for i in civilizations:
+                if(i != civilizations[-1]): civilization_string += i + ', '
+                else: civilization_string += 'or ' + i
+            response.add_field(name=player, value=civilization_string, inline=False)
+
+        await message.channel.send(content=None, embed=response)
+    else:
+        list = randomizer.get_blacklist()
+        response = discord.Embed(title='Civilization Randomizer Choose Pool', url=website, description='List of civs that be chosen from.', color=0x58ff00)
+        response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
+        response.set_thumbnail(url=logo_url)
+        for civ in randomizer.get_choose_pool():
+            response.add_field(name=civ, value='true', inline=True)
+        await message.add_reaction(confirm_emoji)
+        await message.channel.send(content=None, embed=response)
 
     if(utils.DELETE_AFTER_PROCESS): await message.delete()
-    await message.channel.send(content=None, embed=response)
 
 async def blacklist(message):
     global client
