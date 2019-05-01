@@ -11,8 +11,9 @@ confirm_emoji = "\u2705"
 deny_emoji = "\u26d4"
 commands = {
     'help': 'Stop it, get some help.',
-    'ban': 'Alias for blacklist',
-    'blacklist [add/del/empty] <[String] civilization name>': '`<Nothing>` gets the blacklist, `add`Adds to it, `del` deletes from it, `empty` empties it.',
+    'ban <[String/Array]>': 'Bans civ(s)',
+    'unban <[String/Array]>': 'Unbans civ(s)',
+    'blacklist [empty] <[String] civilization name>': '`<Nothing>` gets the blacklist, `empty` empties it.',
     'choose <[Int] player_count> <(optional)[Int] civilization_count>': '`<Nothing>` gets a list of civilizations that can be randomly selected, otherwise gets `player_count` number of random selections of size `civilization_count`.',
     'dlcs [enable/all/disable/none/get] <[String] dlc_name>': '`<Nothing>` gets a list of all available dlcs, `enable` enables `dlc_name`, `all` enables all dlcs, `disable` disables `dlc_name`, `none` disables all dlcs'
 }
@@ -96,16 +97,62 @@ async def choose(message):
 
         await message.channel.send(content=None, embed=response)
     else:
-        list = randomizer.get_blacklist()
-        response = discord.Embed(title='Civilization Randomizer Choose Pool', url=website, description='List of civs that be chosen from.', color=0x07fc28)
-        response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
-        response.set_thumbnail(url=logo_url)
-        for civ in randomizer.get_choose_pool():
-            response.add_field(name=civ, value='true', inline=True)
-        await message.add_reaction(confirm_emoji)
-        await message.channel.send(content=None, embed=response)
+        size = len(randomizer.get_choose_pool())
+        if(size >= 20):
+            response_1 = discord.Embed(title='Civilization Randomizer Choose Pool', url=website, description='List of civs to chose from.', color=0x07fc28)
+            response_1.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
+            response_1.set_thumbnail(url=logo_url)
+
+            response_2 = discord.Embed(title='Civilization Randomizer Choose Pool Cont.', url=website, description='Continued list of civs to chose from.', color=0x07fc28)
+            response_2.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
+            response_2.set_thumbnail(url=logo_url)
+
+            half = size // 2
+            list_1 = randomizer.get_choose_pool()[:half]
+            list_2 = randomizer.get_choose_pool()[half:]
+
+            for civ in list_1:
+                response_1.add_field(name=civ, value='true', inline=True)
+            for civ in list_2:
+                response_2.add_field(name=civ, value='true', inline=True)
+
+            await message.add_reaction(confirm_emoji)
+            await message.channel.send(content=None, embed=response_1)
+            await message.channel.send(content=None, embed=response_2)
+        else:
+            response = discord.Embed(title='Civilization Randomizer Choose Pool', url=website, description='List of civs that be chosen from.', color=0x07fc28)
+            response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
+            response.set_thumbnail(url=logo_url)
+            for civ in randomizer.get_choose_pool():
+                response.add_field(name=civ, value='true', inline=True)
+            await message.add_reaction(confirm_emoji)
+            await message.channel.send(content=None, embed=response)
 
     if(utils.DELETE_AFTER_PROCESS): await message.delete()
+
+async def ban(message):
+    substrings = message.content.split(' ')
+    if(len(substrings) >= 2):
+        for i in range(1, len(substrings)):
+            if(utils.DEBUG): utils.log(0, 'Adding value: #' + str(i) + ' ' + substrings[i] + ' of ' + str(len(substrings) - 2) + ' entries.')
+            randomizer.add_to_blacklist(substrings[i])
+        randomizer.reform_pool()
+        await message.add_reaction(confirm_emoji)
+    else:
+        await message.add_reaction(deny_emoji)
+        await bad_command(message)
+
+async def unban(message):
+    substrings = message.content.split(' ')
+    if(len(substrings) >= 2):
+        for i in range(1, len(substrings)):
+            if(utils.DEBUG): utils.log(0, 'Removing value: #' + str(i) + ' ' + substrings[i] + ' of ' + str(len(substrings) - 2) + ' entries.')
+            randomizer.remove_from_blacklist(substrings[i])
+        randomizer.reform_pool()
+        await message.add_reaction(confirm_emoji)
+    else:
+        await message.add_reaction(deny_emoji)
+        await bad_command(message)
 
 async def blacklist(message):
     global client
@@ -114,19 +161,7 @@ async def blacklist(message):
     global deny_emoji
 
     substrings = message.content.split(' ')
-    if(len(substrings) >= 3 and substrings[1].lower() == 'add'):
-        for i in range(2, len(substrings)):
-            if(utils.DEBUG): utils.log(0, 'Adding value: #' + str(i) + ' ' + substrings[i] + ' of ' + str(len(substrings) - 2) + ' entries.')
-            randomizer.add_to_blacklist(substrings[i])
-        randomizer.reform_pool()
-        await message.add_reaction(confirm_emoji)
-    elif(len(substrings) >= 3 and substrings[1].lower() == 'del'):
-        for i in range(2, len(substrings)):
-            if(utils.DEBUG): utils.log(0, 'Removing value: #' + str(i) + ' ' + substrings[i] + ' of ' + str(len(substrings) - 2) + ' entries.')
-            randomizer.remove_from_blacklist(substrings[i])
-        randomizer.reform_pool()
-        await message.add_reaction(confirm_emoji)
-    elif(len(substrings) == 2 and substrings[1].lower() == 'empty'):
+    if(len(substrings) == 2 and substrings[1].lower() == 'empty'):
         randomizer.empty_blacklist()
         randomizer.reform_pool()
         await message.add_reaction(confirm_emoji)
@@ -211,9 +246,15 @@ async def on_message(message):
         # Get the action map of the command suffix
         command = message_suffix(message.content)
 
-        if(command == 'blacklist' or command == 'ban'):
+        if(command == 'blacklist'):
             await set_status(bot_status('Makin a list...'), discord.Status.dnd)
             await blacklist(message)
+        elif(command == 'ban'):
+            await set_status(bot_status('Banning...'), discord.Status.dnd)
+            await ban(message)
+        elif(command == 'unban'):
+            await set_status(bot_status('Unbanning...'), discord.Status.dnd)
+            await unban(message)
         elif(command == 'choose'):
             await set_status(bot_status('Rolling dice...'), discord.Status.dnd)
             await choose(message)
