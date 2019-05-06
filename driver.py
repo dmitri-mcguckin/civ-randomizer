@@ -219,6 +219,7 @@ async def dlcs(message):
         await message.add_reaction(deny_emoji)
         await bad_command(message)
 
+    randomizer.reform_pool()
     if(utils.DELETE_AFTER_PROCESS): await message.delete()
 
 async def bad_command(message):
