@@ -35,6 +35,11 @@ class CivRandomizer():
         self.choose_pool = utils.flatten_list(self.choose_pool)
         self.pool_size = len(self.choose_pool)
 
+    def is_civilization(self, civilization):
+        civilization = civilization[0].upper() + civilization[1:len(civilization)].lower()
+        if(civilization in self.choose_pool): return True
+        else: return False
+
     def update_pool_size(self):
         self.pool_size = len(self.choose_pool)
         return self.pool_size

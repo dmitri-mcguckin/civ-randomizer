@@ -21,10 +21,6 @@ DEFAULT_BOT_STATUS = 'Twiddling thumbs...'
 website = 'https://github.com/dmitri-mcguckin/civ-randomizer'
 logo_url = 'https://i.imgur.com/pBgN2gZ.jpg'
 
-class ImposibleReactionResolve(Exception):
-    def __init__(self):
-        utils.log(3, "Reaction confirmation could not resolve!")
-
 def bot_status(message=DEFAULT_BOT_STATUS):
     global prefix
     return (prefix + "help" + " | " + message)
@@ -80,8 +76,14 @@ async def choose(message):
     results = {}
 
     if(argc > 1):
-        if(argc == 2): results = randomizer.choose(int(argv[1]))
-        elif(argc == 3): results = randomizer.choose(int(argv[1]), civilization_count=int(argv[2]))
+        try:
+            if(argc == 2): results = randomizer.choose(int(argv[1]))
+            elif(argc == 3): results = randomizer.choose(int(argv[1]), civilization_count=int(argv[2]))
+        except:
+            utils.log(3, 'Was unable to convert tokens to their correct numbers.\n\tThrowing out command!')
+            await message.add_reaction(deny_emoji)
+            if(utils.DELETE_AFTER_PROCESS): await message.delete()
+            return
 
         response = discord.Embed(title='Civilization Randomizer Results', url=website, description='Results of the randomizer.', color=0xf4fc07)
         response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
@@ -135,7 +137,12 @@ async def ban(message):
     if(len(substrings) >= 2):
         for i in range(1, len(substrings)):
             if(utils.DEBUG): utils.log(0, 'Adding value: #' + str(i) + ' ' + substrings[i] + ' of ' + str(len(substrings) - 2) + ' entries.')
-            randomizer.add_to_blacklist(substrings[i])
+            if(randomizer.is_civilization(substrings[i])): randomizer.add_to_blacklist(substrings[i])
+            else:
+                await message.add_reaction(deny_emoji)
+                await bad_result(message, substrings[i] + ' is not in the choose pool. *(Try using ' + message_prefix(message.content) + 'choose to view a list of available civs and c!dlcs to ensure dlcs are enabled).*')
+                return
+
         randomizer.reform_pool()
         await message.add_reaction(confirm_emoji)
     else:
@@ -220,6 +227,14 @@ async def bad_command(message):
     utils.log(1, 'Cannot process this command: ' + message.content + '\n\tIgnoring!')
     if(utils.DELETE_AFTER_PROCESS): await message.delete()
     await message.channel.send(content=('**<@' + str(message.author.id) + '> Bad command: \"' + message.content + '\"!** *(Try using ' + message_prefix(message.content) + "help for correct usage)*"))
+
+async def bad_result(message, description):
+    global client
+
+    utils.log(1, description + '\n\Throwing out command!')
+    if(utils.DELETE_AFTER_PROCESS): await message.delete()
+    await message.channel.send(content=('**<@' + str(message.author.id) + '>: ' + description + '**'))
+
 
 #
 # Initialization
