@@ -43,7 +43,7 @@
   ],
   "dlc_packs": {
     "Babylon (Nebuchadnezzar II)": [
-      false,
+      true,
       "Babylon"
     ],
     "Civilization and Scenario Pack: Denmark - The Vikings": [
@@ -51,15 +51,15 @@
       "Denmark"
     ],
     "Civilization and Scenario Pack: Korea": [
-      false,
+      true,
       "Korea"
     ],
     "Civilization and Scenario Pack: Polynesia": [
-      false,
+      true,
       "Polynesia"
     ],
     "Double Civilization and Scenario Pack: Spain and Inca": [
-      false,
+      true,
       [
         "Spain",
         "Incans"

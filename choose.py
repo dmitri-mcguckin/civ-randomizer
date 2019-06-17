@@ -1,10 +1,10 @@
-import random, sys, math, json
+import random, sys, math, json, copy
 import utilities as utils
 from copy import copy, deepcopy
 
 class CivRandomizer():
-    def __init__(self):
-        self.config_path='./config.json'
+    def __init__(self, config_path='defaults.json'):
+        self.config_path= config_path
         config_file = open(self.config_path, mode='r')
         data = config_file.read()
         config_file.close()
@@ -15,6 +15,12 @@ class CivRandomizer():
     def __del__(self):
         if(utils.DEBUG): utils.log(2, 'Destructing pool and writing config back to file!')
         data = json.dumps(self.config, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=2, separators=None, default=None, sort_keys=True)
+
+        if(self.config_path == 'defaults.json'):
+            self.config_path = './profile_1.json'
+            utils.log(1, 'The profile was set to default, creating a new profile and writing to: ' + self.config_path)
+
+
         config_file = open(self.config_path, mode='w')
         config_file.write(data)
         config_file.close()
@@ -33,6 +39,7 @@ class CivRandomizer():
             if i in self.choose_pool:
                 self.choose_pool.remove(i)
         self.choose_pool = utils.flatten_list(self.choose_pool)
+        self.choose_pool.sort()
         self.pool_size = len(self.choose_pool)
 
     def update_pool_size(self):
@@ -94,16 +101,27 @@ class CivRandomizer():
         if(civilization_count == None):
             civilization_count = self.recommended_pool_size(player_count, self.pool_size)
             if(utils.DEBUG): utils.log(2, 'Using recommended shared pool size: ' + str(civilization_count))
+        elif(player_count * civilization_count > self.pool_size):
+            utils.log(3, 'Cannot perform choose operation!\n\tThere are only ' + str(self.pool_size) + ' civilizations in the pool and there would need to be ' + str(player_count * civilization_count) + ' civilizations to complete ' + str(player_count) + ' sets of size ' + str(civilization_count))
+            return {}
 
+        session_pool = self.choose_pool.copy()
+        session_size = self.pool_size
         results = {}
 
-        for i in range(0, player_count):
-            player_hash = str('Player ' + str(i + 1))
-            results[player_hash] = []
-            for j in range(0, civilization_count):
-                position = random.randint(0, self.update_pool_size() - 1)
-                results[player_hash].append(self.choose_pool.pop(position))
+        if(utils.DEBUG): utils.log(2, 'Starting new choose session with the following pool: [size: ' + str(session_size) + ']\n\t' + str(session_pool))
 
+        # Selection for individual player
+        for player in range(1, player_count  + 1):
+            player_name = 'Player' + str(player)
+            results[player_name] = []
+
+            # Selection of random civs
+            for i in range(0, civilization_count):
+                position = random.randint(0, session_size - 1)
+                new_civ = session_pool.pop(position)
+                results[player_name].append(new_civ)
+                session_size -= 1
         return results
 
 def usage():
@@ -116,18 +134,20 @@ def main():
     if(argc == 1 or argc == 2):
         randomizer = CivRandomizer()
         if(utils.DEBUG):
-            utils.log(2, '\n\tDLCS:\t' + str(randomizer.get_dlcs())
-                       + '\n\tBlacklist:\t' + str(randomizer.get_blacklist())
-                       + '\n\tChoose Pool:\t' + str(randomizer.choose_pool))
-        randomizer.toggle_all_dlcs(False)
-        randomizer.toggle_dlc('vikings', True)
-        randomizer.add_to_blacklist('venice')
-        randomizer.remove_from_blacklist('egypt')
+            utils.log(2, '\tDLCS:\t' + str(randomizer.get_dlcs())
+                       + '\n\t\tBlacklist:\t' + str(randomizer.get_blacklist())
+                       + '\n\t\tChoose Pool:\t' + str(randomizer.choose_pool))
+
+        randomizer.toggle_all_dlcs(True)
 
         if(argc == 1):
-            utils.log(0, sys.argv[1] + ' choose r: ' + str(randomizer.choose(int(sys.argv[1]))))
+            results = randomizer.choose(int(sys.argv[1]))
+            for i in results:
+                utils.log(0, i + ': ' + str(results[i]))
         else:
-            utils.log(0, sys.argv[1] + ' choose ' + sys.argv[2] + ': ' + str(randomizer.choose(int(sys.argv[1]), civilization_count=int(sys.argv[2]))))
+            results = randomizer.choose(int(sys.argv[1]), civilization_count=int(sys.argv[2]))
+            for i in results:
+                utils.log(0, i + ': ' + str(results[i]))
     else:
         usage()
         exit(1)

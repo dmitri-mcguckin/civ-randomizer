@@ -87,15 +87,21 @@ async def choose(message):
         response.set_author(name='Civilization Randomizer', url=website, icon_url=logo_url)
         response.set_thumbnail(url=logo_url)
 
-        utils.log(0, 'Player Civilization selections:')
-        for player,civilizations in results.items():
-            civilization_string = "Choose from: "
-            for i in civilizations:
-                if(i != civilizations[-1]): civilization_string += i + ', '
-                else: civilization_string += 'or ' + i
-            response.add_field(name=player, value=civilization_string, inline=False)
+        if(len(results) == 0):
+            utils.log(2, 'Got an empty list back from the randomizer! No choose!')
+            await message.add_reaction(deny_emoji)
+            return
+        else:
+            await message.add_reaction(confirm_emoji)
+            utils.log(0, 'Player Civilization selections:')
+            for player,civilizations in results.items():
+                civilization_string = "Choose from: "
+                for i in civilizations:
+                    if(i != civilizations[-1]): civilization_string += i + ', '
+                    else: civilization_string += 'or ' + i
+                response.add_field(name=player, value=civilization_string, inline=False)
 
-        await message.channel.send(content=None, embed=response)
+            await message.channel.send(content=None, embed=response)
     else:
         size = len(randomizer.get_choose_pool())
         if(size >= 20):

@@ -1,7 +1,7 @@
 import operator as op
 from functools import reduce
 
-DEBUG = True
+DEBUG = False
 DELETE_AFTER_PROCESS = False
 
 def ncr(n, r):
