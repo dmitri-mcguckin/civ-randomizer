@@ -25,14 +25,6 @@ def bot_status(message=DEFAULT_BOT_STATUS):
     global prefix
     return (prefix + "help" + " | " + message)
 
-async def handle_forced_exit():
-    global client
-
-    print('\n')
-    utils.log(0, 'A signal was received to shutdown the bot!')
-    await client.logout()
-    sys.exit(0)
-
 def message_prefix(message):
     return message[0:len(prefix)]
 
@@ -225,7 +217,6 @@ async def dlcs(message):
         await message.add_reaction(deny_emoji)
         await bad_command(message)
 
-    randomizer.reform_pool()
     if(utils.DELETE_AFTER_PROCESS): await message.delete()
 
 async def bad_command(message):
@@ -257,6 +248,15 @@ bot_token = os.getenv('CIV_BOT_TOKEN')
 async def on_ready():
     utils.log(0, 'Client logged in as the user ' + str(client.user) + '\n\tID: ' + str(client.user.id) + '\n\tBOT: ' + str(client.user.bot) + '\n\tDisplay Name: ' + str(client.user.display_name))
     await set_status(bot_status(DEFAULT_BOT_STATUS), discord.Status.online)
+
+@client.event
+async def on_disconnect():
+    global client
+
+    print('\n')
+    utils.log(0, 'Logging out!')
+    await client.logout()
+    sys.exit(0)
 
 @client.event
 async def on_message(message):
@@ -294,4 +294,3 @@ async def on_message(message):
         await set_status(bot_status(), discord.Status.online)
 
 client.run(bot_token)
-signal.signal(signal.SIGINT, handle_forced_exit())
