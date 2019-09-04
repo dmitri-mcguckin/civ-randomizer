@@ -1,6 +1,6 @@
 {
-  "blacklist": [],
-  "base_game_civilizations": {
+  "blacklist": ["Venice", "Poland", "America"],
+  "civilizations": {
     "America": ["US", "USA"],
     "Arabia": ["Arab", "Saudi Arabia"],
     "Assyria": [],

@@ -18,9 +18,8 @@ class Civilization():
         if(isinstance(other_civ, str)): return (self.name != other_civ.title() and not (other_civ.title() in self.alternate_names))
         elif(isinstance(other_civ, Civilization)): return (self.name != other_civ.name.title() and not (other_civ.name.title() in self.alternate_names))
 
-    def __repr__(self): return "{ Name: " + self.name + "\tEnabled: " + str(self.enabled) + ",\tis_dlc: " + str(self.is_dlc) + ",\talternate_names: " + str(self.alternate_names) + " }"
-
-    def __str__(self): return "{ Name: " + self.name + "\tEnabled: " + str(self.enabled) + ",\tis_dlc: " + str(self.is_dlc) + ",\talternate_names: " + str(self.alternate_names) + " }"
+    def __repr__(self): return self.name + ": Enabled(" + str(self.enabled) + "), Is DLC(" + str(self.is_dlc) + "), Alternate names(" + str(self.alternate_names) + ")"
+    def __str__(self):  return self.name + ": Enabled(" + str(self.enabled) + "), Is DLC(" + str(self.is_dlc) + "), Alternate names(" + str(self.alternate_names) + ")"
 
 def main():
     c1_name = "rOmE"
