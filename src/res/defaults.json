@@ -1,69 +1,64 @@
 {
-  "blacklist": [
-    "Venice"
-  ],
-  "default_civilization_pool": [
-    "America",
-    "Arabia",
-    "Assyria",
-    "Austria",
-    "Aztecs",
-    "Brazil",
-    "Byzantium",
-    "Carthage",
-    "Celts",
-    "China",
-    "Netherlands",
-    "Egypt",
-    "England",
-    "Ethiopia",
-    "France",
-    "Germany",
-    "Greece",
-    "Huns",
-    "India",
-    "Indonesia",
-    "Iroquois",
-    "Japan",
-    "Maya",
-    "Mongolia",
-    "Morocco",
-    "Ottomans",
-    "Persia",
-    "Poland",
-    "Portugal",
-    "Rome",
-    "Russia",
-    "Shoshone",
-    "Siam",
-    "Songhai",
-    "Sweden",
-    "Venice",
-    "Zulus"
-  ],
+  "blacklist": ["Venice", "Poland", "America"],
+  "civilizations": {
+    "America": ["US", "USA"],
+    "Arabia": ["Arab", "Saudi Arabia"],
+    "Assyria": [],
+    "Austria": ["Austria Hungary"],
+    "Aztec": [],
+    "Brazil": ["Brazilian"],
+    "Byzantium": ["Byzas"],
+    "Carthage": ["Cartahginian"],
+    "Celt": ["Celtics"],
+    "China": ["Chineese"],
+    "Netherland": ["Dutch"],
+    "Egypt": ["Egyptian"],
+    "England": ["UK", "United Kingdom", "Britain"],
+    "Ethiopia": ["Ethiopian"],
+    "France": ["French"],
+    "Germany": ["German"],
+    "Greece": ["Greek"],
+    "Hun": [],
+    "India": ["Indian Raj"],
+    "Indonesia": [],
+    "Iroquoi": ["Haudenosaunee"],
+    "Japan": ["Japanese"],
+    "Maya": ["Mayans"],
+    "Mongolia": ["Mongols"],
+    "Morocco": ["Moroccan"],
+    "Ottoman": ["Turkey", "Turk"],
+    "Persia": [],
+    "Poland": ["Polish"],
+    "Portugal": ["Portuguese"],
+    "Rome": ["Roman"],
+    "Russia": ["Slav"],
+    "Shoshone": ["Shoshoni"],
+    "Siam": ["Thailand"],
+    "Songhai": ["Songhay"],
+    "Sweden": [],
+    "Venice": [],
+    "Zulu": []
+  },
   "dlc_packs": {
-    "Babylon (Nebuchadnezzar II)": [
-      true,
-      "Babylon"
-    ],
-    "Civilization and Scenario Pack: Denmark - The Vikings": [
-      true,
-      "Denmark"
-    ],
-    "Civilization and Scenario Pack: Korea": [
-      true,
-      "Korea"
-    ],
-    "Civilization and Scenario Pack: Polynesia": [
-      true,
-      "Polynesia"
-    ],
-    "Double Civilization and Scenario Pack: Spain and Inca": [
-      true,
-      [
-        "Spain",
-        "Incans"
-      ]
-    ]
+    "Babylon (Nebuchadnezzar II)": {
+      "enabled": true,
+      "civs": { "Babylon": ["Mesopotamia"] }
+    },
+    "Civilization and Scenario Pack: Denmark - The Vikings": {
+      "enabled": true,
+      "civs": { "Denmark": ["Danish"] }
+    },
+    "Civilization and Scenario Pack: Korea": {
+      "enabled": true,
+      "civs": { "Korea": ["Korean"] }
+    },
+    "Civilization and Scenario Pack: Polynesia": {
+      "enabled": true,
+      "civs": { "Polynesia": ["Polynisian"] }
+    },
+    "Double Civilization and Scenario Pack: Spain and Inca": {
+      "enabled": true,
+      "civs": { "Spain": ["Spanish"], "Incan": ["Inca"] }
+    }
   }
 }
