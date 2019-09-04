@@ -6,7 +6,7 @@ A python bot for randomly selecting a subset of all civs in `Sid Meyer's Civiliz
 
 ### Installation
 
-A set of installation scripts have been provided for your conveninece. The only supported platform for this process is linux.
+A set of installation scripts have been provided for your convenience. The only supported platform for this process is linux.
 
 To install, simply run `civ-randomizer/bin/install.sh`
 
