@@ -59,14 +59,30 @@ class CivRandomizer():
                 count = count + 1
         print("\t\tLoaded an additional " + str(count) + " civs!")
 
-
-        utils.log(0, "The randomizer has been constructed!\n\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
+        utils.log(0, "The randomizer has been constructed!")
+        print("\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
 
     def __del__(self):
         #
         # Save the profile back to file specified in the app config
         #
         utils.dump_json(self.app_config['defaults'], self.profile)
+
+    def toggle_dlc(self, name, mode):
+        mode_str = "disabled"
+        pers_dlc_name = ""
+        if(mode): mode_str = "enabled"
+
+        for dlc_name, dlc_data in self.profile['dlc_packs'].items():
+            if(dlc_name.lower().find(name) != -1):
+                pers_dlc_name = dlc_name
+                dlc_data['enabled'] = False
+
+                for civ_name in dlc_data['civs'].keys():
+                    for civ in self.pool:
+                        if(civ_name == civ.name): civ.enabled = mode
+        utils.log(0, "The DLC: " + pers_dlc_name + " has been " + mode_str + "!")
+        print("\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
 
     def choose(self, player_count, requested_civs_per_player=None):
         players = []
@@ -114,6 +130,8 @@ def usage():
 def main():
     # try:
         randomizer = CivRandomizer()
+        randomizer.toggle_dlc('double civ', True)
+        randomizer.toggle_dlc('kore', False)
         results = randomizer.choose(int(sys.argv[1]), int(sys.argv[2]))
 
         for i, list in enumerate(results):
