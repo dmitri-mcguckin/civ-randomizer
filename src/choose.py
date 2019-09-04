@@ -1,27 +1,27 @@
-import random, sys, math, json, copy
+import random, sys, os, math, json, copy
 import utilities as utils
 from copy import copy, deepcopy
 
 class CivRandomizer():
-    def __init__(self, config_path='defaults.json'):
+    def __init__(self, config_path=os.getcwd() + '/res/defaults.json'):
+        print("PATH: ")
         self.config_path= config_path
         config_file = open(self.config_path, mode='r')
         data = config_file.read()
         config_file.close()
         self.config = json.loads(data)
-
         self.reform_pool()
 
     def __del__(self):
         if(utils.DEBUG): utils.log(2, 'Destructing pool and writing config back to file!')
         data = json.dumps(self.config, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=2, separators=None, default=None, sort_keys=True)
 
-        if(self.config_path == 'defaults.json'):
-            self.config_path = './profile_1.json'
+        if(self.config_path == './defaults.json'):
+            self.config_path = '~/.civ-bot/profile.json'
             utils.log(1, 'The profile was set to default, creating a new profile and writing to: ' + self.config_path)
 
-
-        config_file = open(self.config_path, mode='w')
+        if(not os.path.exists(self.config_path)): os.makedirs(self.config)
+        config_file = open(self.config_path, mode='w+')
         config_file.write(data)
         config_file.close()
 

@@ -29,3 +29,9 @@ def log(arg_mode, message):
         }
 
     print('[' + mode[arg_mode] + ']: ' + message)
+
+def main():
+    os.symlink("../bin/civ-bot.sh", "./civ-bot")
+
+if __name__ == '__main__':
+    main()

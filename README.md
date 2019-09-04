@@ -4,14 +4,22 @@ A python bot for randomly selecting a subset of all civs in `Sid Meyer's Civiliz
 
 # Usage
 
+### Installation
+
+A set of installation scripts have been provided for your convenience. The only supported platform for this process is linux.
+
+To install, simply run `civ-randomizer/bin/install.sh`
+
+Afterwards, the bot is installed to `/opt/civ-bot` and some symlinks are created in `/usr/bin` so you can simply run `civ-bot` and `civ-choose` anywhere on your linux system.
+
 ### Local choose mechanism
 
-`python3 choose.py <[Int player count]> <(optional)[Int] civilization count>`
+`civ-bot`
 
 ### Discord bot
 
-`python3 driver.py`
+`civ-choose`
 
 *(for persistence, use the following)*
 
-`screen -dmS civ-bot python3 driver.py`
+`screen -dmS civ-bot`
