@@ -66,8 +66,8 @@ ln -f -s $INSTALL_PATH/bin/choose.sh /usr/bin/civ-choose
 mkdir -p $(dirname $CONF_PATH)
 echo "{" > $CONF_PATH
 echo -e "\t\"install_path\": \"$INSTALL_PATH\"," >> $CONF_PATH
-echo -e "\t\"defaults\": \"$(dirname $CONF_PATH)/defaults.json\"" >> $CONF_PATH
+echo -e "\t\"defaults\": \"$(dirname $CONF_PATH)/profile.json\"" >> $CONF_PATH
 echo "}" >> $CONF_PATH
-cp $INSTALL_PATH/src/res/defaults.json $(dirname $CONF_PATH)
+cp $INSTALL_PATH/src/res/defaults.json $(dirname $CONF_PATH)/profile.json
 
-uperm -u root -g root -d $INSTALL_PATH -p 755 -r -y -s
+uperm -u root -g root -d $INSTALL_PATH -p 777 -r -y -s
