@@ -4,6 +4,7 @@ from copy import copy, deepcopy
 
 class CivRandomizer():
     def __init__(self, config_path=os.getcwd() + '/res/defaults.json'):
+        print("PATH: ")
         self.config_path= config_path
         config_file = open(self.config_path, mode='r')
         data = config_file.read()
