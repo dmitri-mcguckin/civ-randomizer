@@ -32,8 +32,6 @@ def log(arg_mode, message):
     print('[' + mode[arg_mode] + ']: ' + message)
 
 def load_json(file_path):
-    log(0, "Loading data from file: " + file_path)
-
     # Read the raw JSON data
     file = open(file_path)
     file_data = file.read()
@@ -43,8 +41,6 @@ def load_json(file_path):
     return json.loads(file_data)
 
 def dump_json(file_path, dictionary):
-    log(0, "Saving to file: " + file_path)
-
     # Transpose dictionary into raw JSON
     data = json.dumps(dictionary, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=2, separators=None, default=None, sort_keys=True)
 
