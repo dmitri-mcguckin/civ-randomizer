@@ -3,17 +3,15 @@ import civilization as civ
 import utilities as utils
 
 class CivRandomizer():
-    def __init__(self, config_path=os.path.abspath(os.path.join(os.path.join(os.path.realpath(__file__), os.pardir), os.pardir)) + "/config/config.json", verbose=False):
+    def __init__(self, config_path=os.path.abspath(os.path.join(os.path.join(os.path.realpath(__file__), os.pardir), os.pardir)) + "/config/profile.json", verbose=False):
         self.pool = [] # An array of Civilization objects that will be chosen from eventually
-        self.blacklist = []
-        self.verbose = verbose
+        self.blacklist = [] # An array of civlization string names that will be omitted in choosing
+        self.verbose = verbose # Verbose mode for the civ randomizer
 
         #
         # Check if the config file exists first, gracefully exit if it doesn't
         #
-        if(os.path.isfile(config_path)):
-            self.config_path = config_path
-            self.app_config = {}
+        if(os.path.isfile(config_path)): self.config_path = config_path
         else: raise Exception(  "Config was not found in expected path: "
                                 + config_path
                                 + "\n\tciv-bot might not have been installed correctly!"
@@ -22,8 +20,7 @@ class CivRandomizer():
         #
         # Load the app config file then civ profile respectively
         #
-        self.app_config = utils.load_json(self.config_path)
-        self.profile = utils.load_json(self.app_config['defaults'])
+        self.profile = utils.load_json(self.config_path)
 
         #
         # Load the blacklist
@@ -40,7 +37,7 @@ class CivRandomizer():
         for civ_name, alt_names in self.profile['civilizations'].items():
             new_civ = civ.Civilization(civ_name, alt_names, False, not (civ_name in self.blacklist))
             self.pool.append(new_civ)
-            if(utils.DEBUG): print("Adding to pool: " + str(new_civ))
+            if(self.verbose): print("Adding to pool: " + str(new_civ))
             count = count + 1
         if(self.verbose): print("\t\tLoaded an additional " + str(count) + " civs!")
 
@@ -56,7 +53,7 @@ class CivRandomizer():
             for civ_name, alt_names in dlc_data['civs'].items():
                 new_civ = civ.Civilization(civ_name, alt_names, True, (dlc_enabled and not (civ_name in self.blacklist)))
                 self.pool.append(new_civ)
-                if(utils.DEBUG): print("Adding to pool: " + str(new_civ))
+                if(self.verbose): print("Adding to pool: " + str(new_civ))
                 count = count + 1
         if(self.verbose): print("\t\tLoaded an additional " + str(count) + " civs!")
 
@@ -64,11 +61,28 @@ class CivRandomizer():
             utils.log(0, "The randomizer has been constructed!")
             print("\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
 
-    def __del__(self):
+    #
+    # Disabled destructor till I figure out why system calls don't word as soon as scope is in destructor
+    #
+    def __del__(self): pass
         #
         # Save the profile back to file specified in the app config
         #
-        if('defaults' in self.app_config.keys()): utils.dump_json(self.app_config['defaults'], self.profile)
+        # utils.log(0, "Saving profile to file: " + self.config_path)
+        # utils.dump_json(self.config_path, self.profile)
+
+    def toggle_civ(self, civ_name, mode):
+        for civ in self.pool:
+            if(civ_name == civ):
+                civ.enabled = mode
+
+                #
+                # Dealing with the blacklist for crosscheck later
+                #
+                if(mode): # if the civ's being enabled
+                    if(civ.name in self.blacklist): self.blacklist.remove(civ.name)
+                else: # if the civ's being disabled
+                    if(not civ.name in self.blacklist): self.blacklist.append(civ.name)
 
     def toggle_dlc(self, name, mode):
         mode_str = "disabled"
@@ -130,6 +144,9 @@ def usage():
     utils.log(3, 'Invalid usage!\n\tUsage: civ-choose <[Int] player count> <{optional} [Int] civilizations per player>')
 
 def main():
+    options = 3
+    required_args = 1
+    optional_args = 1
     arg_count = len(sys.argv)
 
     if(arg_count == 2 or arg_count == 3):

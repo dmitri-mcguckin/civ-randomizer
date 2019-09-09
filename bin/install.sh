@@ -7,7 +7,6 @@ UPERM_BIN=uperm
 UPERM_PATH=$(command -v $UPERM_BIN)
 
 INSTALL_PATH=/opt/civ-bot
-CONF_PATH=$INSTALL_PATH/config/config.json
 
 #
 # 1: Message tag mode:
@@ -56,18 +55,15 @@ fi
 cd ../
 mkdir -p $INSTALL_PATH/bin
 mkdir -p $INSTALL_PATH/src
+mkdir -p $INSTALL_PATH/config
 
 cp -r ./bin $INSTALL_PATH
-cp -r ./src $INSTALL_PATH
+cp -r ./src/*.py $INSTALL_PATH/src
+cp -r ./res/* $INSTALL_PATH/config
 
 ln -f -s $INSTALL_PATH/bin/civ-bot.sh /usr/bin/civ-bot
 ln -f -s $INSTALL_PATH/bin/choose.sh /usr/bin/civ-choose
 
-mkdir -p $(dirname $CONF_PATH)
-echo "{" > $CONF_PATH
-echo -e "\t\"install_path\": \"$INSTALL_PATH\"," >> $CONF_PATH
-echo -e "\t\"defaults\": \"$(dirname $CONF_PATH)/profile.json\"" >> $CONF_PATH
-echo "}" >> $CONF_PATH
-cp $INSTALL_PATH/src/res/defaults.json $(dirname $CONF_PATH)/profile.json
+cp $INSTALL_PATH/config/defaults.json $INSTALL_PATH/config/profile.json
 
 uperm -u root -g root -d $INSTALL_PATH -p 777 -r -y -s
