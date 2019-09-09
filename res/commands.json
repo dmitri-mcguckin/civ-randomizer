@@ -1,5 +1,6 @@
 {
   "help": ["", "Stop it, get some help!"],
+  "civs": ["", "Displays the full list of civilizations in finer detail."],
   "blacklist": ["", "Displays the list of banned civilizations."],
   "ban": ["all/<civilization name>", "Bans specified civilizations."],
   "unban": ["all/<civilization name>", "Unbans specified civilizations."],

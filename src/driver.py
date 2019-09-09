@@ -54,6 +54,46 @@ async def deny_message(message): await message.add_reaction(deny_emoji)
 #
 # Civ bot things
 #
+async def display_civs(message, args):
+    await confirm_message(message)
+
+    #
+    # The civilization list is so big it needs to be split up into two payloads top fit into sendable embeds
+    #
+    randomizer.pool.sort()
+    half_list = int(len(randomizer.pool) / 2)
+    result_message_1 = create_embed('Civilization Randomizer', '[1/2] A full list of civilizations in finer detail.')
+    result_message_2 = create_embed('Civilization Randomizer', '[2/2] A full list of civilizations in finer detail.')
+
+    for civ in randomizer.pool[:half_list]:
+        status = '[Disabled]'
+        dlc_string = ""
+        aka_string = "No aliases"
+        if(civ.is_dlc): dlc_string = "<DLC>"
+        if(civ.enabled): status = '[Enabled]'
+        if(len(civ.alternate_names) > 0):
+            aka_string = "Also known as: "
+            for index, name in enumerate(civ.alternate_names):
+                aka_string = aka_string + name
+                if(index != (len(civ.alternate_names) - 1)): aka_string = aka_string + ', '
+        result_message_1.add_field(name=civ.name + ' ' + dlc_string + ' ' + status, value=aka_string, inline=False)
+
+    for civ in randomizer.pool[half_list:]:
+        status = '[Disabled]'
+        dlc_string = ""
+        aka_string = "No aliases"
+        if(civ.is_dlc): dlc_string = "<DLC>"
+        if(civ.enabled): status = '[Enabled]'
+        if(len(civ.alternate_names) > 0):
+            aka_string = "Also known as: "
+            for index, name in enumerate(civ.alternate_names):
+                aka_string = aka_string + name
+                if(index != (len(civ.alternate_names) - 1)): aka_string = aka_string + ', '
+        result_message_2.add_field(name=civ.name + ' ' + dlc_string + ' ' + status, value=aka_string, inline=False)
+
+    await message.channel.send(embed=result_message_1)
+    await message.channel.send(embed=result_message_2)
+
 async def choose_civs(message, args):
     player_results = []
 
@@ -117,11 +157,38 @@ async def unban(message, args):
             else: await deny_message(message)
     else: await deny_message(message)
 
-async def display_dlcs(message, args): pass
+async def display_dlcs(message, args):
+    await confirm_message(message)
+    result_message = create_embed('Civilization Randomizer', 'A list of all available DLC\'s for Sid Meyer\'s Civilization V.')
+    for dlc_name, dlc_data in randomizer.profile['dlc_packs'].items():
+        status = 'Disabled'
+        civ_string = "Includes: "
+        for index, civ in enumerate(dlc_data['civs'].keys()):
+            civ_string = civ_string + civ
+            if(index != (len(dlc_data['civs'].keys()) - 1)): civ_string = civ_string + ', '
+        if(dlc_data['enabled']): status = 'Enabled'
+        result_message.add_field(name=dlc_name + ' [' + status + ']', value=civ_string, inline=False)
+    await message.channel.send(embed=result_message)
 
-async def enable(message, args): pass
+async def enable(message, args):
+    if(len(args) >= 1):
+        if(args[0] == 'all'):
+            await confirm_message(message)
+            for dlc in randomizer.profile['dlc_packs'].keys(): randomizer.toggle_dlc(dlc, True)
+        else:
+            await confirm_message(message)
+            for arg in args: randomizer.toggle_dlc(arg, True)
+    else: await deny_message(message)
 
-async def disable(message, args): pass
+async def disable(message, args):
+    if(len(args) >= 1):
+        if(args[0] == 'all'):
+            await confirm_message(message)
+            for dlc in randomizer.profile['dlc_packs'].keys(): randomizer.toggle_dlc(dlc, False)
+        else:
+            await confirm_message(message)
+            for arg in args: randomizer.toggle_dlc(arg, False)
+    else: await deny_message(message)
 
 #
 # Initialization
@@ -166,6 +233,9 @@ async def on_message(message):
         if(command == 'help'):
             await set_status('Getting help...')
             await usage(message)
+        elif(command == 'civs'):
+            await set_status('Getting civilization details...')
+            await display_civs(message, args)
         elif(command == 'choose'):
             await set_status('Choosing things...')
             await choose_civs(message, args)

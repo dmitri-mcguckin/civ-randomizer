@@ -72,9 +72,14 @@ class CivRandomizer():
         # utils.dump_json(self.config_path, self.profile)
 
     def toggle_civ(self, civ_name, mode):
+        mode_str = "disabled"
+        pers_dlc_name = ""
+        if(mode): mode_str = "enabled"
+
         for civ in self.pool:
             if(civ_name == civ):
                 civ.enabled = mode
+                civ_name = civ.name
 
                 #
                 # Dealing with the blacklist for crosscheck later
@@ -83,6 +88,9 @@ class CivRandomizer():
                     if(civ.name in self.blacklist): self.blacklist.remove(civ.name)
                 else: # if the civ's being disabled
                     if(not civ.name in self.blacklist): self.blacklist.append(civ.name)
+        if(self.verbose):
+            utils.log(0, "The Civ: " + civ_name + " has been " + mode_str + "!")
+            print("\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
 
     def toggle_dlc(self, name, mode):
         mode_str = "disabled"
@@ -90,13 +98,11 @@ class CivRandomizer():
         if(mode): mode_str = "enabled"
 
         for dlc_name, dlc_data in self.profile['dlc_packs'].items():
-            if(dlc_name.lower().find(name) != -1):
+            if(dlc_name.lower().find(name.lower()) != -1):
                 pers_dlc_name = dlc_name
-                dlc_data['enabled'] = False
-
+                dlc_data['enabled'] = mode
                 for civ_name in dlc_data['civs'].keys():
-                    for civ in self.pool:
-                        if(civ_name == civ.name): civ.enabled = mode
+                    self.toggle_civ(civ_name, mode)
         if(self.verbose):
             utils.log(0, "The DLC: " + pers_dlc_name + " has been " + mode_str + "!")
             print("\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
