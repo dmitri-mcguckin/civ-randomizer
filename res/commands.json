@@ -1,0 +1,11 @@
+{
+  "help": ["", "Stop it, get some help!"],
+  "civs": ["", "Displays the full list of civilizations in finer detail."],
+  "blacklist": ["", "Displays the list of banned civilizations."],
+  "ban": ["all/<civilization name>", "Bans specified civilizations."],
+  "unban": ["all/<civilization name>", "Unbans specified civilizations."],
+  "choose": ["<player count> <(optional) civilizations per player>", "Creates a randomized list for <player count> number of players with <civilizations per player> civs per player."],
+  "dlcs": ["<(optional) dlc name>", "Displays the list of Civilization V DLC's and their details."],
+  "enable": ["all/<dlc name>", "Enables the specified DLC."],
+  "disable": ["all/<dlc name>", "Disables the specified DLC."]
+}

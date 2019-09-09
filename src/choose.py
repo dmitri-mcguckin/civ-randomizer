@@ -3,16 +3,15 @@ import civilization as civ
 import utilities as utils
 
 class CivRandomizer():
-    def __init__(self, config_path=os.path.abspath(os.path.join(os.path.join(os.path.realpath(__file__), os.pardir), os.pardir)) + "/config/config.json"):
+    def __init__(self, config_path=os.path.abspath(os.path.join(os.path.join(os.path.realpath(__file__), os.pardir), os.pardir)) + "/config/profile.json", verbose=False):
         self.pool = [] # An array of Civilization objects that will be chosen from eventually
-        self.blacklist = []
+        self.blacklist = [] # An array of civlization string names that will be omitted in choosing
+        self.verbose = verbose # Verbose mode for the civ randomizer
 
         #
         # Check if the config file exists first, gracefully exit if it doesn't
         #
-        if(os.path.isfile(config_path)):
-            self.config_path = config_path
-            self.app_config = {}
+        if(os.path.isfile(config_path)): self.config_path = config_path
         else: raise Exception(  "Config was not found in expected path: "
                                 + config_path
                                 + "\n\tciv-bot might not have been installed correctly!"
@@ -21,52 +20,92 @@ class CivRandomizer():
         #
         # Load the app config file then civ profile respectively
         #
-        self.app_config = utils.load_json(self.config_path)
-        self.profile = utils.load_json(self.app_config['defaults'])
+        self.profile = utils.load_json(self.config_path)
 
         #
         # Load the blacklist
         #
-        utils.log(0, "Loading the blacklist")
+        if(self.verbose): utils.log(0, "Loading the blacklist")
         self.blacklist = self.profile['blacklist']
-        print("\t\tAdded " + str(len(self.blacklist)) + " civs to the blacklist!")
+        if(self.verbose): print("\t\tAdded " + str(len(self.blacklist)) + " civs to the blacklist!")
 
         #
         # Load the default civs
         #
         count = 0
-        utils.log(0, "Loading base game civilizations")
+        if(self.verbose): utils.log(0, "Loading base game civilizations")
         for civ_name, alt_names in self.profile['civilizations'].items():
             new_civ = civ.Civilization(civ_name, alt_names, False, not (civ_name in self.blacklist))
             self.pool.append(new_civ)
-            if(utils.DEBUG): print("Adding to pool: " + str(new_civ))
+            if(self.verbose): print("Adding to pool: " + str(new_civ))
             count = count + 1
-        print("\t\tLoaded an additional " + str(count) + " civs!")
+        if(self.verbose): print("\t\tLoaded an additional " + str(count) + " civs!")
 
         #
         # Load the DLC civs
         #
         count = 0
-        utils.log(0, "Loading DLC's")
+        if(self.verbose): utils.log(0, "Loading DLC's")
         for dlc_name, dlc_data in self.profile['dlc_packs'].items():
             dlc_enabled = dlc_data['enabled']
-            print("Found the DLC: " + dlc_name)
+            if(self.verbose): print("Found the DLC: " + dlc_name)
 
             for civ_name, alt_names in dlc_data['civs'].items():
                 new_civ = civ.Civilization(civ_name, alt_names, True, (dlc_enabled and not (civ_name in self.blacklist)))
                 self.pool.append(new_civ)
-                if(utils.DEBUG): print("Adding to pool: " + str(new_civ))
+                if(self.verbose): print("Adding to pool: " + str(new_civ))
                 count = count + 1
-        print("\t\tLoaded an additional " + str(count) + " civs!")
+        if(self.verbose): print("\t\tLoaded an additional " + str(count) + " civs!")
 
+        if(self.verbose):
+            utils.log(0, "The randomizer has been constructed!")
+            print("\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
 
-        utils.log(0, "The randomizer has been constructed!\n\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
-
-    def __del__(self):
+    #
+    # Disabled destructor till I figure out why system calls don't word as soon as scope is in destructor
+    #
+    def __del__(self): pass
         #
         # Save the profile back to file specified in the app config
         #
-        utils.dump_json(self.app_config['defaults'], self.profile)
+        # utils.log(0, "Saving profile to file: " + self.config_path)
+        # utils.dump_json(self.config_path, self.profile)
+
+    def toggle_civ(self, civ_name, mode):
+        mode_str = "disabled"
+        pers_dlc_name = ""
+        if(mode): mode_str = "enabled"
+
+        for civ in self.pool:
+            if(civ_name == civ):
+                civ.enabled = mode
+                civ_name = civ.name
+
+                #
+                # Dealing with the blacklist for crosscheck later
+                #
+                if(mode): # if the civ's being enabled
+                    if(civ.name in self.blacklist): self.blacklist.remove(civ.name)
+                else: # if the civ's being disabled
+                    if(not civ.name in self.blacklist): self.blacklist.append(civ.name)
+        if(self.verbose):
+            utils.log(0, "The Civ: " + civ_name + " has been " + mode_str + "!")
+            print("\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
+
+    def toggle_dlc(self, name, mode):
+        mode_str = "disabled"
+        pers_dlc_name = ""
+        if(mode): mode_str = "enabled"
+
+        for dlc_name, dlc_data in self.profile['dlc_packs'].items():
+            if(dlc_name.lower().find(name.lower()) != -1):
+                pers_dlc_name = dlc_name
+                dlc_data['enabled'] = mode
+                for civ_name in dlc_data['civs'].keys():
+                    self.toggle_civ(civ_name, mode)
+        if(self.verbose):
+            utils.log(0, "The DLC: " + pers_dlc_name + " has been " + mode_str + "!")
+            print("\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
 
     def choose(self, player_count, requested_civs_per_player=None):
         players = []
@@ -80,7 +119,7 @@ class CivRandomizer():
         for civ in self.pool:
             if(civ.enabled): choose_pool.append(civ)
         available_max_civs = len(choose_pool)
-        print("There are a total of " + str(available_max_civs) + " civs to choose from this round!")
+        if(self.verbose): print("There are a total of " + str(available_max_civs) + " civs to choose from this round!")
 
         #
         # Cross check with the blacklist that the choose pool doesn't have what it shouldn't
@@ -91,9 +130,8 @@ class CivRandomizer():
         #
         # Ensures that no matter what, the choose pool will not have overflow of civs-per-player
         #
-        requested_max_civs = player_count * requested_civs_per_player
         if(requested_civs_per_player == None): civs_per_player = int(available_max_civs / player_count)
-        elif(requested_max_civs <= available_max_civs): civs_per_player = requested_civs_per_player
+        elif((player_count * requested_civs_per_player) <= available_max_civs): civs_per_player = requested_civs_per_player
         else: civs_per_player = int(available_max_civs / player_count)
 
         for i in range(0, player_count):
@@ -109,12 +147,18 @@ class CivRandomizer():
         return players
 
 def usage():
-    utils.log(3, 'Invalid usage!\n\tUsage: python3 choose.py <[Int] player count> <[Int] civilization count>')
+    utils.log(3, 'Invalid usage!\n\tUsage: civ-choose <[Int] player count> <{optional} [Int] civilizations per player>')
 
 def main():
-    # try:
+    options = 3
+    required_args = 1
+    optional_args = 1
+    arg_count = len(sys.argv)
+
+    if(arg_count == 2 or arg_count == 3):
         randomizer = CivRandomizer()
-        results = randomizer.choose(int(sys.argv[1]), int(sys.argv[2]))
+        if(arg_count == 2): results = randomizer.choose(int(sys.argv[1]))
+        elif(arg_count == 3): results = randomizer.choose(int(sys.argv[1]), int(sys.argv[2]))
 
         for i, list in enumerate(results):
             print("Player " + str(i + 1)+ ": [ ", end='')
@@ -123,8 +167,7 @@ def main():
                 print(civ.name, end='')
                 if(j < len(list) - 1): print(", ", end="")
             print(" ]")
-
-    # except Exception as e: print("\n" + str(e))
+    else: usage()
 
 if __name__ == '__main__':
     main()

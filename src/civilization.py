@@ -18,28 +18,21 @@ class Civilization():
         if(isinstance(other_civ, str)): return (self.name != other_civ.title() and not (other_civ.title() in self.alternate_names))
         elif(isinstance(other_civ, Civilization)): return (self.name != other_civ.name.title() and not (other_civ.name.title() in self.alternate_names))
 
+    def __lt__(self, other_civ):
+        if(isinstance(other_civ, str)): return (self.name < other_civ.title())
+        elif(isinstance(other_civ, Civilization)): return (self.name < other_civ.name.title())
+
+    def __le__(self, other_civ):
+        if(isinstance(other_civ, str)): return (self.name <= other_civ.title())
+        elif(isinstance(other_civ, Civilization)): return (self.name <= other_civ.name.title())
+
+    def __gt__(self, other_civ):
+        if(isinstance(other_civ, str)): return (self.name > other_civ.title())
+        elif(isinstance(other_civ, Civilization)): return (self.name > other_civ.name.title())
+
+    def __ge__(self, other_civ):
+        if(isinstance(other_civ, str)): return (self.name >= other_civ.title())
+        elif(isinstance(other_civ, Civilization)): return (self.name >= other_civ.name.title())
+
     def __repr__(self): return self.name + ": Enabled(" + str(self.enabled) + "), Is DLC(" + str(self.is_dlc) + "), Alternate names(" + str(self.alternate_names) + ")"
     def __str__(self):  return self.name + ": Enabled(" + str(self.enabled) + "), Is DLC(" + str(self.is_dlc) + "), Alternate names(" + str(self.alternate_names) + ")"
-
-def main():
-    c1_name = "rOmE"
-    c1_alts = ['roman', 'romans']
-    c2_name = "vEnIce"
-    c2_alts = ['venician', 'venicians']
-
-    c1 = Civilization(c1_name, c1_alts, True)
-    c2 = Civilization(c2_name, c2_alts)
-
-    print("Civs:\n" + str(c1) + "\n" + str(c2))
-
-    print("\n(c1 == rome): " + str(c1 == "rome"))
-    print("(c1 != rome): " + str(c1 != "rome"))
-
-    print("\n(c2 == venice): " + str(c2 == "venice"))
-    print("(c2 != venice): " + str(c2 != "venice"))
-
-    print("\n(c1 == c2): " + str(c1 == c2))
-    print("(c1 != c2): " + str(c1 !=  c2))
-
-if __name__ == "__main__":
-    main()
