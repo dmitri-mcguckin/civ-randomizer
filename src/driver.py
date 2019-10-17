@@ -1,5 +1,5 @@
 import discord, os, asyncio, choose, time
-import utilities as utils
+from utilities import log, load_json, dump_json, Mode
 
 #
 # Stuff to use in runtime
@@ -11,7 +11,7 @@ bot_status = {
     'dnd': discord.Status.dnd,
 }
 
-commands = utils.load_json(os.path.abspath(os.path.join(os.path.join(os.path.realpath(__file__), os.pardir), os.pardir)) + "/config/commands.json")
+commands = load_json(os.path.abspath(os.path.join(os.path.join(os.path.realpath(__file__), os.pardir), os.pardir)) + "/config/commands.json")
 prefix = 'c!'
 response_timeout = 5
 confirm_emoji = "\u2705"
@@ -98,13 +98,13 @@ async def choose_civs(message, args):
     player_results = []
 
     if(len(args) == 1 or len(args) == 2):
-        utils.log(0, "Got argument(s) for choose: " + str(args))
+        log(Mode.INFO, "Got argument(s) for choose: " + str(args))
 
         try:
             for arg in args: int(arg)
         except ValueError as e:
             await deny_message(message)
-            utils.log(3, str(e) + "\n\tGracefully skipping processing this command.")
+            log(Mode.WARN, str(e) + "\n\tGracefully skipping processing this command.")
             return
 
         await confirm_message(message)
@@ -203,7 +203,7 @@ bot_token = os.getenv('CIV_BOT_TOKEN')
 @client.event
 async def on_connect():
     user = client.user
-    utils.log(0, "Logged in as " + str(user))
+    log(Mode.INFO, "Logged in as " + str(user))
 
 @client.event
 async def on_disconnect():
@@ -211,8 +211,8 @@ async def on_disconnect():
     # Band-aid fix to destructor issue of scope calls miraculously not working anymore as soon as the
     #   destructor is in scope, ergo files can no longer be opend and saved to
     #
-    utils.log(0, "Logging out of discord...\n\tSaving choose profile to file: " + randomizer.config_path)
-    utils.dump_json(randomizer.config_path, randomizer.profile)
+    log(Mode.INFO, "Logging out of discord...\n\tSaving choose profile to file: " + randomizer.config_path)
+    dump_json(randomizer.config_path, randomizer.profile)
 
 @client.event
 async def on_ready(): await set_default_status()
@@ -228,7 +228,7 @@ async def on_message(message):
     args = pieces[1:]
 
     if(message.content[:2] == prefix):
-        utils.log(0, "Message from (" + str(author) + "): \"" + message.content + "\"")
+        log(Mode.INFO, "Message from (" + str(author) + "): \"" + message.content + "\"")
 
         if(command == 'help'):
             await set_status('Getting help...')

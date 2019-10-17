@@ -1,6 +1,6 @@
 import sys, os, os.path, json, random
 import civilization as civ
-import utilities as utils
+from utilities import log, load_json, Mode
 
 class CivRandomizer():
     def __init__(self, config_path=os.path.abspath(os.path.join(os.path.join(os.path.realpath(__file__), os.pardir), os.pardir)) + "/config/profile.json", verbose=False):
@@ -20,46 +20,46 @@ class CivRandomizer():
         #
         # Load the app config file then civ profile respectively
         #
-        self.profile = utils.load_json(self.config_path)
+        self.profile = load_json(self.config_path)
 
         #
         # Load the blacklist
         #
-        if(self.verbose): utils.log(0, "Loading the blacklist")
+        if(self.verbose): log(Mode.INFO, "Loading the blacklist")
         self.blacklist = self.profile['blacklist']
-        if(self.verbose): print("\t\tAdded " + str(len(self.blacklist)) + " civs to the blacklist!")
+        if(self.verbose): log(Mode.DEBUG, "\t\tAdded " + str(len(self.blacklist)) + " civs to the blacklist!")
 
         #
         # Load the default civs
         #
         count = 0
-        if(self.verbose): utils.log(0, "Loading base game civilizations")
+        if(self.verbose): log(Mode.INFO, "Loading base game civilizations")
         for civ_name, alt_names in self.profile['civilizations'].items():
             new_civ = civ.Civilization(civ_name, alt_names, False, not (civ_name in self.blacklist))
             self.pool.append(new_civ)
-            if(self.verbose): print("Adding to pool: " + str(new_civ))
+            if(self.verbose): log(Mode.DEBUG, "\tAdding to pool: " + str(new_civ))
             count = count + 1
-        if(self.verbose): print("\t\tLoaded an additional " + str(count) + " civs!")
+        if(self.verbose): log(Mode.DEBUG, "\t\tLoaded an additional " + str(count) + " civs!")
 
         #
         # Load the DLC civs
         #
         count = 0
-        if(self.verbose): utils.log(0, "Loading DLC's")
+        if(self.verbose): log(Mode.INFO, "Loading DLC's")
         for dlc_name, dlc_data in self.profile['dlc_packs'].items():
             dlc_enabled = dlc_data['enabled']
-            if(self.verbose): print("Found the DLC: " + dlc_name)
+            if(self.verbose): log(Mode.INFO, "Found the DLC: " + dlc_name)
 
             for civ_name, alt_names in dlc_data['civs'].items():
                 new_civ = civ.Civilization(civ_name, alt_names, True, (dlc_enabled and not (civ_name in self.blacklist)))
                 self.pool.append(new_civ)
-                if(self.verbose): print("Adding to pool: " + str(new_civ))
+                if(self.verbose): log(Mode.INFO, "Adding to pool: " + str(new_civ))
                 count = count + 1
-        if(self.verbose): print("\t\tLoaded an additional " + str(count) + " civs!")
+        if(self.verbose): log(Mode.DEBUG, "\t\tLoaded an additional " + str(count) + " civs!")
 
         if(self.verbose):
-            utils.log(0, "The randomizer has been constructed!")
-            print("\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
+            log(Mode.INFO, "The randomizer has been constructed!")
+            log(Mode.INFO, "\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
 
     #
     # Disabled destructor till I figure out why system calls don't word as soon as scope is in destructor
@@ -68,8 +68,6 @@ class CivRandomizer():
         #
         # Save the profile back to file specified in the app config
         #
-        # utils.log(0, "Saving profile to file: " + self.config_path)
-        # utils.dump_json(self.config_path, self.profile)
 
     def toggle_civ(self, civ_name, mode):
         mode_str = "disabled"
@@ -89,8 +87,8 @@ class CivRandomizer():
                 else: # if the civ's being disabled
                     if(not civ.name in self.blacklist): self.blacklist.append(civ.name)
         if(self.verbose):
-            utils.log(0, "The Civ: " + civ_name + " has been " + mode_str + "!")
-            print("\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
+            log(Mode.INFO, "The Civ: " + civ_name + " has been " + mode_str + "!")
+            log(Mode.INFO, "\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
 
     def toggle_dlc(self, name, mode):
         mode_str = "disabled"
@@ -104,8 +102,8 @@ class CivRandomizer():
                 for civ_name in dlc_data['civs'].keys():
                     self.toggle_civ(civ_name, mode)
         if(self.verbose):
-            utils.log(0, "The DLC: " + pers_dlc_name + " has been " + mode_str + "!")
-            print("\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
+            log(Mode.INFO, "The DLC: " + pers_dlc_name + " has been " + mode_str + "!")
+            log(Mode.INFO, "\tTotal: " + str(len(self.pool)) + " civs | Banned: " + str(len(self.blacklist)) + " civs | Available: " + str(len(self.pool) - len(self.blacklist)) + " civs\n")
 
     def choose(self, player_count, requested_civs_per_player=None):
         players = []
@@ -119,7 +117,7 @@ class CivRandomizer():
         for civ in self.pool:
             if(civ.enabled): choose_pool.append(civ)
         available_max_civs = len(choose_pool)
-        if(self.verbose): print("There are a total of " + str(available_max_civs) + " civs to choose from this round!")
+        if(self.verbose): log(Mode.INFO, "There are a total of " + str(available_max_civs) + " civs to choose from this round!")
 
         #
         # Cross check with the blacklist that the choose pool doesn't have what it shouldn't
@@ -147,7 +145,7 @@ class CivRandomizer():
         return players
 
 def usage():
-    utils.log(3, 'Invalid usage!\n\tUsage: civ-choose <[Int] player count> <{optional} [Int] civilizations per player>')
+    log(Mode.ERROR, 'Invalid usage!\n\tUsage: civ-choose <[Int] player count> <{optional} [Int] civilizations per player>')
 
 def main():
     options = 3
