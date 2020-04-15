@@ -1,5 +1,5 @@
 {
-  "blacklist": ["Venice", "Poland", "America"],
+  "blacklist": [],
   "civilizations": {
     "America": ["US", "USA"],
     "Arabia": ["Arab", "Saudi Arabia"],
