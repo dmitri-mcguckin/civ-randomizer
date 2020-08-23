@@ -1,13 +1,11 @@
-import asyncio, sys, copy, os
+import discord
+import copy
+import os
 from time import ctime
-from discord import *
-from .randomizer import Randomizer
-from ftf_utilities import log, Mode, load_json, dump_json
+import civ_randomizer.randomizer as randomizer
 
-CONFIRM_EMOJI = "\u2705"
-DENY_EMOJI = "\u26d4"
 
-class CivBot(Client):
+class CivBot(discord.Client):
     def __init__(self, token,
                        commands,
                        default_profile,
@@ -59,7 +57,7 @@ class CivBot(Client):
         profile_path = self.cache_dir + os.sep + str(guild.id) + '_guild.json'
         if(os.path.exists(profile_path)): profile = load_json(profile_path)
         else: profile = self.default_profile
-        self.randomizers[int(guild.id)] = copy.deepcopy(Randomizer(profile, verbose = self.verbose))
+        self.randomizers[int(guild.id)] = copy.deepcopy(randomizer.Randomizer(profile, verbose = self.verbose))
 
     def dump_profile(self, guild):
         profile_path = self.cache_dir + os.sep + str(guild.id) + '_guild.json'
@@ -72,10 +70,10 @@ class CivBot(Client):
 
     def create_embed(self, title, description, author = None):
         if(author is None): author = self.user.name
-        embed = Embed(title = title,
-                      description = description,
-                      url = self.website,
-                      color = self.color)
+        embed = discord.Embed(title = title,
+                              description = description,
+                              url = self.website,
+                              color = self.color)
         embed.set_author(name = author,
                          url = self.website)
         return embed
@@ -95,10 +93,10 @@ class CivBot(Client):
         await message.channel.send(embed = usage_msg)
 
     async def set_default_status(self):
-        await self.set_status(self.prefix + "help | " + self.message, status=Status.idle)
+        await self.set_status(self.prefix + "help | " + self.message, status=discord.Status.idle)
 
-    async def set_status(self, message, status = Status.online):
-        await self.change_presence(status = status, activity = Game(message))
+    async def set_status(self, message, status = discord.Status.online):
+        await self.change_presence(status = status, activity = discord.Game(message))
 
     async def display_civs(self, guild, message, args):
         await CivBot.confirm_message(message)

@@ -1,0 +1,13 @@
+[Unit]
+Description=Civilization Randomizer
+
+[Service]
+Type=forking
+PIDFile=/run/civ-randomizer.pid
+EnvironmentFile=/etc/environment
+ExecStart=/usr/bin/python3 /opt/civ-randomizer/civ-randomizer.py
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
