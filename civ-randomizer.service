@@ -1,13 +1,13 @@
 [Unit]
-Description=Civilization Randomizer
+Description=A team-based draft-picker for Civ V with Discord integration.
 
 [Service]
 Type=forking
 PIDFile=/run/civ-randomizer.pid
 EnvironmentFile=/etc/environment
-ExecStart=/usr/bin/python3 /opt/civ-randomizer/civ-randomizer.py
-User=root
-Group=root
+ExecStart=civilization-randomizerd
+User=ivo
+Group=ivo
 
 [Install]
 WantedBy=multi-user.target

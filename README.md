@@ -1,6 +1,6 @@
 # Civilization Randomizer
 
-A Discord bot for randomly selecting a subset of civs from all that's available in `Sid Meyer's Civilization V`, *(including all DLC's)* to make multiplayer with your friends spicy.
+A team-based draft-picker for Civ V with Discord integration.
 
 This bot is an alternative to the default in-game randomization that the base game provides. Instead of only randomly choosing one civ, at the start and not knowing what you have until you load into the game, you can now choose from a subset of civs. This bot enables friend groups to to team picking/fighting in a more interesting way as well as draft picking, (both teams alternate banning, then random pools are chosen, both teams alternate choosing).
 

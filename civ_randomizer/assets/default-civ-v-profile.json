@@ -42,23 +42,23 @@
   "dlc_packs": {
     "Babylon (Nebuchadnezzar II)": {
       "enabled": true,
-      "civs": { "Babylon": ["Mesopotamia"] }
+      "civilizations": { "Babylon": ["Mesopotamia"] }
     },
     "Civilization and Scenario Pack: Denmark - The Vikings": {
       "enabled": true,
-      "civs": { "Denmark": ["Danish"] }
+      "civilizations": { "Denmark": ["Danish"] }
     },
     "Civilization and Scenario Pack: Korea": {
       "enabled": true,
-      "civs": { "Korea": ["Korean"] }
+      "civilizations": { "Korea": ["Korean"] }
     },
     "Civilization and Scenario Pack: Polynesia": {
       "enabled": true,
-      "civs": { "Polynesia": ["Polynisian"] }
+      "civilizations": { "Polynesia": ["Polynisian"] }
     },
     "Double Civilization and Scenario Pack: Spain and Inca": {
       "enabled": true,
-      "civs": { "Spain": ["Spanish"], "Incan": ["Inca"] }
+      "civilizations": { "Spain": ["Spanish"], "Incan": ["Inca"] }
     }
   }
 }
