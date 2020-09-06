@@ -8,7 +8,6 @@ This bot is an alternative to the default in-game randomization that the base ga
 
 ### Discord client commands:
 
-* help: Stop it, get some help!
 * civs: Displays the full list of civilizations in finer detail.
 * blacklist: Displays the list of banned civilizations.
 * ban: Bans specified civilizations.

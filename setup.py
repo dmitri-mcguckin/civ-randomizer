@@ -15,7 +15,7 @@ setuptools.setup(
     description=cr.BOT_DESCRIPTION,
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url=cr.BOT_URL,
+    url=cr.BOT_URLS[''],
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

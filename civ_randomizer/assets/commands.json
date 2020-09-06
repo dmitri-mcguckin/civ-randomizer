@@ -1,0 +1,81 @@
+{
+  "help": {
+    "short": "Display the help menu.",
+    "long": "Display the help menu.",
+    "examples": [
+      "help"
+    ]
+  },
+  "prefix": {
+    "short": "Set a new command prefix.",
+    "long": "Set a new command prefix. The first character must be alpha-numeric.",
+    "examples": [
+      "prefix !"
+    ]
+  },
+  "choose": {
+    "short": "Draft random civs for each player.",
+    "long": "Draft a unique fixed-sized pool of random civilizations for each player.",
+    "examples": [
+      "choose 1",
+      "choose 3 10 bill bob jeb",
+      "choose 5 5"
+    ]
+  },
+  "profile": {
+    "short": "Get the guild's profile.",
+    "long": "Get the guild-specific profile settings.",
+    "examples": [
+      "profile"
+    ]
+  },
+  "blacklist": {
+    "short": "Get the blacklist.",
+    "long": "Get the complete list of all banned civilizations.",
+    "examples": [
+      "blacklist"
+    ]
+  },
+  "dlcs": {
+    "short": "Get the dlcs.",
+    "long": "Get the complete list of all dlcs.",
+    "examples": [
+      "dlcs"
+    ]
+  },
+  "draft_pool": {
+    "short": "Get the draft pool.",
+    "long": "Get the complete list of unbanned and enabled civs.",
+    "examples": [
+      "pool"
+    ]
+  },
+  "ban": {
+    "short": "Ban a civ.",
+    "long": "Ban a civilization from being chosen in a final draft.",
+    "examples": [
+      "ban spain"
+    ]
+  },
+  "unban": {
+    "short": "Unban a civ.",
+    "long": "Unban a civilization from being chosen.",
+    "examples": [
+      "unban spain"
+    ]
+  },
+  "enable": {
+    "short": "Enable a DLC.",
+    "long": "Enables a DLC such that all of its civs will be put in the draft pool.",
+    "examples": [
+      "enable korea"
+    ]
+  },
+  "disable": {
+    "short": "Disable a DLC.",
+    "long": "Disables a DLC such that all of its civs will not be put in the draft pool even if the civ is unbanned.",
+    "examples": [
+      "disable korea"
+    ]
+  }
+}

@@ -2,7 +2,7 @@ import sys
 import logging
 import argparse
 import civ_randomizer as cr
-from civ_randomizer.bot import bot
+from civ_randomizer.bot import CivRandomizerBot
 from civ_randomizer.randomizer import Randomizer
 
 
@@ -52,6 +52,8 @@ def main():
             for civ in civs:
                 print('\t{}'.format(str(civ).title()))
     else:
+        bot = CivRandomizerBot(description=cr.BOT_DESCRIPTION)
+
         try:
             bot.run(cr.BOT_TOKEN)
         except KeyboardInterrupt:
